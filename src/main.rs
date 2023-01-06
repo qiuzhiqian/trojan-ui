@@ -17,7 +17,7 @@ fn main() {
 
 struct MyApp {
     configs: Vec<String>,
-    has_selected: i32,
+    has_selected: usize,
     started: bool,
 }
 
@@ -58,22 +58,18 @@ impl eframe::App for MyApp {
                                 ui.set_enabled(true);
                             }
                             
-                            if ui.button(&self.configs[item]).clicked() {
-                                println!("button click {}!!!",item);
-                                self.has_selected = item as i32;
-                            }
-                            //if ui.selectable_label(false, &self.configs[item]).clicked() {
-                            //    println!("button click {}!!!",item);
-                            //    if !self.started {
-                            //        self.has_selected = item as i32;
-                            //    }
-                            //}
+                            ui.selectable_value(&mut self.has_selected, item, &self.configs[item]);
                         });
                     }
                 }).inner;
 
                 ui.separator();
                 ui.horizontal(|ui|{
+                    if self.configs.is_empty() {
+                        ui.set_enabled(false);
+                    }else {
+                        ui.set_enabled(true);
+                    }
                     if ui.button("Edit").clicked() {
                         println!("Editor item...");
                     }
