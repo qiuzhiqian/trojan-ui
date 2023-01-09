@@ -29,11 +29,16 @@ struct MyApp {
 
 impl Default for MyApp {
     fn default() -> Self {
+        let exe_name = if cfg!(target_os = "windows") {
+            "trojan.exe"
+        } else {
+            "trojan"
+        };
         let app = Self {
             configs: get_configs(get_current_dir().expect("this is normal path"),"json"),
             has_selected: 0,
             started: false,
-            child_path: find_process("trojan"),
+            child_path: find_process(exe_name),
             child_process: None,
         };
 
