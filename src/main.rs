@@ -108,6 +108,7 @@ impl eframe::App for MyApp {
                         } else {
                             if let Some(child) = self.child_process.as_mut() {
                                 child.kill().expect("trojan is not running...");
+                                self.child_process = None;
                             }
                         }
                         
