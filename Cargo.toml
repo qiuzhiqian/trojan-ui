@@ -1,5 +1,5 @@
 [package]
-name = "trojan-ui"
+name = "trojan_ui"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,3 +7,8 @@ edition = "2021"
 
 [dependencies]
 eframe = "0.20.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+#trojan_rust = { git = "https://github.com/qiuzhiqian/trojan_rust.git" }
+trojan_rust = { path = "../trojan_rust/" }
+tokio = { version = "1", features = ["full"] }
