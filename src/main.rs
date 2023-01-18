@@ -2,9 +2,9 @@
 
 use eframe::egui;
 
-use std::process::Command;
-use std::path::Path;
 use std::path::PathBuf;
+
+use trojan_ui::config::ConfigList;
 
 fn main() {
     let options = eframe::NativeOptions {
@@ -20,26 +20,25 @@ fn main() {
 }
 
 struct MyApp {
-    configs: Vec<String>,
+    configs: ConfigList,
     has_selected: usize,
     started: bool,
-    child_path: String,
-    child_process: Option<std::process::Child>,
+    proxy: Option<trojan_rust::Proxy>,
+    send: Option<tokio::sync::mpsc::Sender<bool>>,
 }
 
 impl Default for MyApp {
     fn default() -> Self {
-        let exe_name = if cfg!(target_os = "windows") {
-            "trojan.exe"
-        } else {
-            "trojan"
-        };
+        let config_list = ConfigList::new_from_file();
+        println!("{:#?}",config_list);
+
+        //let proxy = trojan_rust::Proxy::new(client_addr, client_port, server_addr, server_port, passwd, sni)
         let app = Self {
-            configs: get_configs(get_current_dir().expect("this is normal path"),"json"),
+            configs: config_list,
             has_selected: 0,
             started: false,
-            child_path: find_process(exe_name),
-            child_process: None,
+            proxy: None,
+            send: None,
         };
 
         return app;
@@ -58,7 +57,7 @@ impl eframe::App for MyApp {
                     .auto_shrink([false; 2])
                     .show(ui, |ui| {
                    
-                    let item_count = self.configs.len();
+                    let item_count = self.configs.configs.len();
                     for item in 0..item_count {
                         let layout = egui::Layout::left_to_right(egui::Align::LEFT).with_main_justify(true);
                         ui.with_layout(layout,|ui|{
@@ -68,14 +67,14 @@ impl eframe::App for MyApp {
                                 ui.set_enabled(true);
                             }
                             
-                            ui.selectable_value(&mut self.has_selected, item, &self.configs[item]);
+                            ui.selectable_value(&mut self.has_selected, item, &self.configs.configs[item].remarks);
                         });
                     }
                 }).inner;
 
                 ui.separator();
                 ui.horizontal(|ui|{
-                    if self.configs.is_empty() {
+                    if self.configs.configs.is_empty() {
                         ui.set_enabled(false);
                     }else {
                         ui.set_enabled(true);
@@ -91,24 +90,20 @@ impl eframe::App for MyApp {
                         1
                     };
                     if ui.button(start_label[current_index]).clicked() {
-                        println!("Start to connect {}",self.configs[self.has_selected as usize]);
-                        
                         if !self.started {
-
-                            if let Ok(mut path) = get_current_dir() {
-                                path.push(&self.configs[self.has_selected as usize]);
-
-                                if path.is_file() {
-                                    self.child_process = Some(Command::new(&self.child_path)
-                                        .args(["-c",path.to_str().expect("this is normal path")])
-                                        .spawn()
-                                        .expect("Failed to start echo process"));
-                                }
+                            let config = &self.configs.configs[self.has_selected as usize];
+                            let proxy = trojan_rust::Proxy::new(&config.client, config.client_port, &config.server, config.server_port, &config.password, &config.sni);
+                            
+                            self.proxy = Some(proxy);
+                            if let Some(proxy) = &self.proxy {
+                                self.send = proxy.start();
                             }
                         } else {
-                            if let Some(child) = self.child_process.as_mut() {
-                                child.kill().expect("trojan is not running...");
-                                self.child_process = None;
+                            if let Some(proxy) = &self.proxy {
+                                if let Some(s) = &self.send {
+                                    proxy.stop(s);
+                                }
+                                
                             }
                         }
                         
@@ -118,67 +113,4 @@ impl eframe::App for MyApp {
             });
         });
     }
-
-    fn on_close_event(&mut self) -> bool {
-        if let Some(x) = self.child_process.as_mut(){
-            x.kill().expect("trojan is not running...");
-        }
-                            
-        return true;
-    }
-}
-
-fn get_configs(path: PathBuf,suffix: &str) -> Vec<String> {
-    let mut result = Vec::new();
-    for entry in path.read_dir().expect("this is not dir") {
-        let entry = entry.expect("this is entry...");
-        if let Some(x) = entry.path().extension() {
-            if x == suffix {
-                result.push(entry.file_name().to_str().expect("is normal string").to_string());
-            }
-        }
-    }
-
-    return result;
-}
-
-fn get_current_dir() -> Result<PathBuf,String> {
-    if let Ok(mut path) = std::env::current_exe() {
-        path.pop();
-        
-        if path.is_dir() {
-            return Ok(path);
-        }
-    }
-    return Err("is not directory path".to_string());
-}
-
-fn find_process(name: &str) -> String {
-    if let Ok(mut path) = get_current_dir() {
-        path.push(name);
-        
-        if path.is_file() {
-            return path.to_str().expect("is not normal path").to_string();
-        }
-    }
-
-    return find_process_from_path(name);
-}
-
-fn find_process_from_path(name: &str) -> String {
-    let key = "PATH";
-    if let Ok(val) = std::env::var(key) {
-        let paths :Vec<&str>= val.split(':').collect();
-
-        for path in paths {
-            let mut filepath = Path::new(path).to_path_buf();
-            filepath.push(name);
-
-            if filepath.is_file() {
-                return filepath.to_str().expect("is not normal path").to_string();
-            }
-        }
-    }
-
-    return "".to_string();
 }
