@@ -30,9 +30,8 @@ struct MyApp {
 
 impl Default for MyApp {
     fn default() -> Self {
-        let path = find_config_file("config_list.txt").expect("No configuration files could be found");
+        let path = find_config_file("config.json").expect("No configuration files could be found");
         let config_list = ConfigList::new_from_file(path.to_str().expect("is not vaild path")).expect("config is invalid");
-        println!("{:#?}",config_list);
 
         let app = Self {
             configs: config_list,
@@ -80,7 +79,7 @@ impl eframe::App for MyApp {
                         ui.set_enabled(true);
                     }
                     if ui.button("Edit").clicked() {
-                        println!("Editor item...");
+                        println!("TODO Editor item...");
                     }
 
                     let start_label=vec!["Start","Stop"];

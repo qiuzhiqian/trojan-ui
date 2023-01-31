@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+TryExec=trojan_ui
+Exec=trojan_ui
+#Icon=utilities-terminal
+Terminal=false
+Name=Trojan_ui
+GenericName=Trojan ui tools
+Comment=A ui tools for trojan client proxy
