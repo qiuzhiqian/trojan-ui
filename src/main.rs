@@ -2,9 +2,10 @@
 
 use eframe::egui;
 
-use std::path::PathBuf;
+//use std::path::PathBuf;
 
 use trojan_ui::config::ConfigList;
+use trojan_ui::proxy;
 
 fn main() {
     let options = eframe::NativeOptions {
@@ -23,7 +24,6 @@ struct MyApp {
     configs: ConfigList,
     has_selected: usize,
     started: bool,
-    proxy: Option<trojan_rust::Proxy>,
     send: Option<tokio::sync::mpsc::Sender<bool>>,
 }
 
@@ -37,7 +37,6 @@ impl Default for MyApp {
             configs: config_list,
             has_selected: 0,
             started: false,
-            proxy: None,
             send: None,
         };
 
@@ -92,18 +91,11 @@ impl eframe::App for MyApp {
                     if ui.button(start_label[current_index]).clicked() {
                         if !self.started {
                             let config = &self.configs.configs[self.has_selected as usize];
-                            let proxy = trojan_rust::Proxy::new(&config.client, config.client_port, &config.server, config.server_port, &config.password, &config.sni);
-                            
-                            self.proxy = Some(proxy);
-                            if let Some(proxy) = &self.proxy {
-                                self.send = proxy.start();
-                            }
+                            self.send = proxy::start(config);
                         } else {
-                            if let Some(proxy) = &self.proxy {
-                                if let Some(s) = &self.send {
-                                    proxy.stop(s);
-                                }
-                                
+                            if let Some(s) = &self.send {
+                                proxy::stop(s);
+                                self.send = None;
                             }
                         }
                         
