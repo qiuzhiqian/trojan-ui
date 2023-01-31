@@ -1,14 +1,13 @@
 use std::path::{Path,PathBuf};
 
-pub fn get_current_dir() -> Result<PathBuf,String> {
-    if let Ok(mut path) = std::env::current_exe() {
-        path.pop();
-        
-        if path.is_dir() {
-            return Ok(path);
-        }
+pub fn get_current_dir() -> std::io::Result<PathBuf> {
+    let mut path = std::env::current_exe()?;
+    path.pop();
+    
+    if path.is_dir() {
+        return Ok(path);
     }
-    return Err("is not directory path".to_string());
+    Err(std::io::Error::new(std::io::ErrorKind::PermissionDenied, format!("{}",path.to_str().expect("path to str failed"))))
 }
 
 pub fn find_process(name: &str) -> String {

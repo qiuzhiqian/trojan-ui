@@ -1,7 +1,5 @@
 use serde::{Serialize, Deserialize};
 
-use crate::utils;
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
     pub remarks: String,
@@ -35,13 +33,9 @@ impl Config {
 }
 
 impl ConfigList{
-    pub fn new_from_file() -> Self {
-        if let Ok(mut path) = utils::get_current_dir() {
-            path.push("config_list.txt");
-            let f = std::fs::File::open(path).unwrap();
-            let values:ConfigList = serde_json::from_reader(f).unwrap();
-            return values;
-        }
-        return ConfigList{configs:vec![Config::default()]};
+    pub fn new_from_file(file: &str) -> std::io::Result<Self> {
+        let f = std::fs::File::open(file).unwrap();
+        let values:ConfigList = serde_json::from_reader(f)?;
+        return Ok(values);
     }
 }

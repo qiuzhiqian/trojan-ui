@@ -2,10 +2,11 @@
 
 use eframe::egui;
 
-//use std::path::PathBuf;
+use std::path::PathBuf;
 
 use trojan_ui::config::ConfigList;
 use trojan_ui::proxy;
+use trojan_ui::utils;
 
 fn main() {
     let options = eframe::NativeOptions {
@@ -29,10 +30,10 @@ struct MyApp {
 
 impl Default for MyApp {
     fn default() -> Self {
-        let config_list = ConfigList::new_from_file();
+        let path = find_config_file("config_list.txt").expect("No configuration files could be found");
+        let config_list = ConfigList::new_from_file(path.to_str().expect("is not vaild path")).expect("config is invalid");
         println!("{:#?}",config_list);
 
-        //let proxy = trojan_rust::Proxy::new(client_addr, client_port, server_addr, server_port, passwd, sni)
         let app = Self {
             configs: config_list,
             has_selected: 0,
@@ -105,4 +106,47 @@ impl eframe::App for MyApp {
             });
         });
     }
+}
+
+// /current_dir/config.json
+// $XDG_CONFIG_HOME/trojan_ui/config.json
+// $HOME/.config/trojan_ui/config.json
+// /etc/trojan_ui/config.json
+fn find_config_file(name: &str) -> std::io::Result<PathBuf>{
+    {
+        let mut path = utils::get_current_dir()?;
+        //path.push("trojan_ui");
+        path.push(name);
+        if path.is_file() {
+            return Ok(path);
+        }
+    }
+    
+
+    if let Ok(val) = std::env::var("XDG_CONFIG_HOME") {
+        let mut path = PathBuf::from(val);
+        path.push("trojan_ui");
+        path.push(name);
+        if path.is_file() {
+            return Ok(path);
+        }
+    }
+
+    if let Ok(val) = std::env::var("HOME") {
+        let mut path = PathBuf::from(val);
+        path.push(".config");
+        path.push("trojan_ui");
+        path.push(name);
+        if path.is_file() {
+            return Ok(path);
+        }
+    }
+
+    let mut path = PathBuf::from("/etc/trojan_ui");
+    path.push(name);
+    if path.is_file() {
+        return Ok(path);
+    }
+
+    return Err(std::io::Error::new(std::io::ErrorKind::NotFound, "file find failed"));
 }
