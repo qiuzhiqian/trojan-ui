@@ -1,3 +1,5 @@
+use std::io::Write;
+
 use serde::{Serialize, Deserialize};
 use regex::Regex;
 
@@ -33,12 +35,16 @@ impl Config {
     }
 
     // trojan://password@domain:port?security=tls&type=tcp&headerType=none#remark
-    pub fn from_url(url:&str) -> Self {
+    pub fn from_url(url:&str) -> std::io::Result<Self> {
         // ([-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]):([0-9]*)/(.*)
-        let re = Regex::new(r"^trojan://(?P<passwd>[^@]+)@(?P<domain>[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]*):(?P<port>[0-9]{1,5})[^#]+#(?P<remarks>[-A-Za-z0-9+&@#/%=~_|.]+)$").unwrap();
+        let re = Regex::new(r"^trojan://(?P<passwd>[^@]+)@(?P<domain>[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]*):(?P<port>[0-9]{1,5})[^#]+#(?P<remarks>[-A-Za-z0-9+&@#/%=~_|.]+)$").map_err(|err|{
+            std::io::Error::new(std::io::ErrorKind::InvalidData, err.to_string())
+        })?;
 
-
-        let caps = re.captures(url).unwrap();
+        let caps = match re.captures(url){
+            Some(cap) => cap,
+            None => {return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, "url is invalid"));},
+        };
 
         let passwd = caps.name("passwd").unwrap().as_str().to_string();
         let domain = caps.name("domain").unwrap().as_str().to_string();
@@ -47,9 +53,8 @@ impl Config {
 
         let port = port_str.parse::<u16>().unwrap();//String to int
 
-        println!("{} {} {} {}",passwd,domain,port,remarks);
-        Self{
-            remarks: remarks,
+        Ok(Self{
+            remarks,
             server: domain,
             server_port: port,
             client: "127.0.0.1".to_string(),
@@ -57,7 +62,7 @@ impl Config {
             sni: "".to_string(),
             password: passwd,
             verify: true,
-        }
+        })
     }
 }
 
@@ -66,5 +71,12 @@ impl ConfigList{
         let f = std::fs::File::open(file).unwrap();
         let values:ConfigList = serde_json::from_reader(f)?;
         return Ok(values);
+    }
+
+    pub fn save_to_file(&self,file: &str) -> std::io::Result<()> {
+        let content = serde_json::to_string(self)?;
+        let mut file = std::fs::File::create(file)?;
+        file.write_all(content.as_bytes())?;
+        Ok(())
     }
 }

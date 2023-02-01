@@ -28,6 +28,7 @@ struct MyApp {
     send: Option<tokio::sync::mpsc::Sender<bool>>,
     input_url: String,
     page_num: u8,
+    config_path: std::path::PathBuf,
 }
 
 impl Default for MyApp {
@@ -42,6 +43,7 @@ impl Default for MyApp {
             send: None,
             input_url: "".to_string(),
             page_num: 0,
+            config_path: path,
         };
 
         return app;
@@ -126,7 +128,11 @@ impl MyApp {
         ui.separator();
         ui.add(egui::TextEdit::singleline(&mut self.input_url).hint_text("trojan://password@domain:port#remarks"));
         if ui.button("Back").clicked() {
-            self.page_num = 0;
+            if let Ok(config) = trojan_ui::config::Config::from_url(&self.input_url){
+                self.configs.configs.push(config);
+                self.configs.save_to_file(self.config_path.to_str().expect("file is invalid")).expect("save config failed");
+                self.page_num = 0;
+            }
         }
     }
 }
