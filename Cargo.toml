@@ -9,7 +9,6 @@ edition = "2021"
 eframe = "0.21.2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-#trojan_rust = { git = "https://github.com/qiuzhiqian/trojan_rust.git" }
-trojan_rust = { path = "../trojan_rust/" }
+trojan_rust = { git = "https://github.com/qiuzhiqian/trojan_rust.git" }
 tokio = { version = "1", features = ["full"] }
 regex = "1"
