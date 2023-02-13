@@ -1,3 +1,5 @@
+![应用图标](config/trojan_ui.svg)
+
 # 介绍
 这是一个使用rust egui编写的一个trojan GUI工具，主要目的是方便从桌面直接启动trojan，避免了命令行的烦恼。
 
@@ -59,4 +61,4 @@ cargo build -r
 1. 界面美化
 2. 配置添加和删除和编辑功能
 3. 二维码导入配置功能
-4. 通过链接方式导入配置功能(trojan://passwd@url:port#remark)
+4. 添加系统托盘支持

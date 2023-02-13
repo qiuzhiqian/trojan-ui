@@ -96,9 +96,17 @@ impl MyApp {
             }else {
                 ui.set_enabled(true);
             }
-            if ui.button("Edit").clicked() {
-                println!("TODO Editor item...");
+            if ui.button("Add").clicked() {
+                println!("Add item...");
                 self.page_num = 1;
+            }
+
+            if ui.button("Edit").clicked() {
+                println!("TODO Edit item...");
+            }
+
+            if ui.button("Share").clicked() {
+                println!("TODO Share item...");
             }
 
             let start_label=vec!["Start","Stop"];
