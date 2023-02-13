@@ -57,6 +57,10 @@ cargo build -r
 # 效果图
 ![](media/screenshut-1.png)
 
+# 协议参考
+[trojan protocol](https://trojan-gfw.github.io/trojan/protocol)
+[socks5 protocol](https://www.rfc-editor.org/rfc/rfc1928)
+
 # TODO
 1. 界面美化
 2. 配置添加和删除和编辑功能
