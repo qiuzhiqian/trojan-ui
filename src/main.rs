@@ -139,8 +139,8 @@ impl MyApp {
             if let Ok(config) = trojan_ui::config::Config::from_url(&self.input_url){
                 self.configs.configs.push(config);
                 self.configs.save_to_file(self.config_path.to_str().expect("file is invalid")).expect("save config failed");
-                self.page_num = 0;
             }
+            self.page_num = 0;
         }
     }
 }
