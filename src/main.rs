@@ -60,6 +60,7 @@ impl eframe::App for MyApp {
                 match self.page_num {
                     1 => self.import_config_page(ui),
                     3 => self.share_config_page(ui),
+                    4 => self.about_page(ui),
                     _ => self.main_page(ui),
                 };
                 
@@ -111,8 +112,11 @@ impl MyApp {
             }
 
             if ui.button("Share").clicked() {
-                println!("TODO Share item...");
                 self.page_num = 3;
+            }
+
+            if ui.button("About").clicked() {
+                self.page_num = 4;
             }
 
             let start_label=vec!["Start","Stop"];
@@ -158,10 +162,6 @@ impl MyApp {
 
         ui.label(&url);
         if ui.button("Back").clicked() {
-            if let Ok(config) = trojan_ui::config::Config::from_url(&self.input_url){
-                self.configs.configs.push(config);
-                self.configs.save_to_file(self.config_path.to_str().expect("file is invalid")).expect("save config failed");
-            }
             self.page_num = 0;
         }
     }
@@ -189,6 +189,17 @@ impl MyApp {
 
         let image = RetainedImage::from_color_image("qrcode",rgb);
         image.show(ui);
+    }
+
+    fn about_page(&mut self,ui: &mut egui::Ui) {
+        let version = env!("CARGO_PKG_VERSION");
+        ui.heading("About");
+        ui.separator();
+        ui.label(format!("Version: {}",version));
+        ui.label(format!("Auth: {}<{}>","xiamengliang","xiamengliang@gmail.com"));
+        if ui.button("Back").clicked() {
+            self.page_num = 0;
+        }
     }
 }
 
