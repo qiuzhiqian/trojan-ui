@@ -10,7 +10,9 @@ pub fn start(config: &config::Config) -> Option<Sender<bool>> {
     let (send, mut recv) = channel::<bool>(1);
     std::thread::spawn(move ||{
         let runtime = Runtime::new().unwrap();
-        runtime.block_on(proxy.start(&mut recv)).expect("abc");
+        if let Err(e) = runtime.block_on(proxy.start(&mut recv)) {
+            println!("trojan runtime err:{}",e);
+        }
     });
     
     return Some(send);
