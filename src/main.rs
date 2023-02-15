@@ -1,8 +1,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 
 use eframe::egui;
-
+use egui_extras::RetainedImage;
 use std::path::PathBuf;
+use std::vec;
 
 use trojan_ui::config::ConfigList;
 use trojan_ui::proxy;
@@ -14,11 +15,13 @@ fn main() {
         resizable: false,
         ..Default::default()
     };
-    eframe::run_native(
+    if let Err(e) = eframe::run_native(
         "Trojan Tools",
         options,
         Box::new(|_cc| Box::new(MyApp::default())),
-    );
+    ) {
+        println!("run app failed. Err:{}",e);
+    }
 }
 
 struct MyApp {
@@ -55,7 +58,8 @@ impl eframe::App for MyApp {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.vertical(|ui| {
                 match self.page_num {
-                    1 => self.setting_page(ui),
+                    1 => self.import_config_page(ui),
+                    3 => self.share_config_page(ui),
                     _ => self.main_page(ui),
                 };
                 
@@ -103,10 +107,12 @@ impl MyApp {
 
             if ui.button("Edit").clicked() {
                 println!("TODO Edit item...");
+                self.page_num = 2;
             }
 
             if ui.button("Share").clicked() {
                 println!("TODO Share item...");
+                self.page_num = 3;
             }
 
             let start_label=vec!["Start","Stop"];
@@ -131,7 +137,7 @@ impl MyApp {
         });
     }
 
-    fn setting_page(&mut self,ui: &mut egui::Ui) {
+    fn import_config_page(&mut self,ui: &mut egui::Ui) {
         ui.heading("Add Config");
         ui.separator();
         ui.add(egui::TextEdit::singleline(&mut self.input_url).hint_text("trojan://password@domain:port#remarks"));
@@ -142,6 +148,47 @@ impl MyApp {
             }
             self.page_num = 0;
         }
+    }
+
+    fn share_config_page(&mut self,ui: &mut egui::Ui) {
+        ui.heading("Share Config");
+        ui.separator();
+        let url = self.configs.configs[self.has_selected as usize].to_url();
+        self.show_qrcode(ui,&url,185);
+
+        ui.label(&url);
+        if ui.button("Back").clicked() {
+            if let Ok(config) = trojan_ui::config::Config::from_url(&self.input_url){
+                self.configs.configs.push(config);
+                self.configs.save_to_file(self.config_path.to_str().expect("file is invalid")).expect("save config failed");
+            }
+            self.page_num = 0;
+        }
+    }
+
+    fn show_qrcode(&mut self,ui: &mut egui::Ui,url:&str,size: u32) {
+        let qr = fast_qr::QRBuilder::new(url).version(fast_qr::Version::V10)
+            .build().unwrap();
+        let width = qr.size;
+        let height = qr.size;
+        let image = image::ImageBuffer::from_fn(width as u32, height as u32, |x,y|{
+            let index = y * (width as u32) + x;
+            if qr.data[index as usize].value() {
+                image::Rgb([0xffff as u16, 0xffff as u16, 0xffff as u16])
+            } else {
+                image::Rgb([0 as u16, 0 as u16, 0 as u16])
+            }
+        });
+        let dy_image = image::DynamicImage::from(image);
+        let dst_image = dy_image.resize_exact(size,size,image::imageops::FilterType::Nearest);
+        let w = dst_image.width();
+        let h = dst_image.height();
+        let image_buffer = dst_image.to_rgba8();
+        let pixels = image_buffer.as_flat_samples();
+        let rgb = egui::ColorImage::from_rgba_unmultiplied([w as usize,h as usize],pixels.as_slice());
+
+        let image = RetainedImage::from_color_image("qrcode",rgb);
+        image.show(ui);
     }
 }
 
