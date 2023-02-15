@@ -59,10 +59,17 @@ cargo build -r
 
 # 协议参考
 [trojan protocol](https://trojan-gfw.github.io/trojan/protocol)
+
 [socks5 protocol](https://www.rfc-editor.org/rfc/rfc1928)
+
+# 特性
+1. trojan协议代理
+2. socks5支持
+3. 多配置支持和选择
+4. 配置添加，支持通过url方式添加配置
+5. 支持通过二维码方式分享配置
 
 # TODO
 1. 界面美化
 2. 配置添加和删除和编辑功能
-3. 二维码导入配置功能
-4. 添加系统托盘支持
+3. 添加系统托盘支持
