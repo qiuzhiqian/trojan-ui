@@ -82,7 +82,9 @@ impl MyApp {
             .show(ui, |ui| {
             let item_count = self.configs.configs.len();
             for item in 0..item_count {
-                self.config_item_show(ui,item);
+                if self.config_item_show(ui,item) {
+                    return;
+                }
             }
         }).inner;
 
@@ -105,7 +107,6 @@ impl MyApp {
     }
 
     fn import_config_page(&mut self,ui: &mut egui::Ui) {
-        self.input_url = "".to_string();
         ui.heading("Add Config");
         ui.separator();
         ui.add(egui::TextEdit::singleline(&mut self.input_url).hint_text("trojan://password@domain:port#remarks"));
@@ -115,6 +116,7 @@ impl MyApp {
                 self.configs.save_to_file(self.config_path.to_str().expect("file is invalid")).expect("save config failed");
             }
             self.page_num = 0;
+            self.input_url = "".to_string();
         }
     }
 
@@ -166,7 +168,8 @@ impl MyApp {
         }
     }
 
-    fn config_item_show(&mut self,ui: &mut egui::Ui,index: usize) {
+    fn config_item_show(&mut self,ui: &mut egui::Ui,mut index: usize) -> bool {
+        let mut need_break = false;
         let layout = egui::Layout::right_to_left(egui::Align::Max).with_cross_align(egui::Align::Min);
         ui.with_layout(layout, |ui|{
             
@@ -182,13 +185,23 @@ impl MyApp {
                     }
 
                     if ui.button("Delete").clicked(){
-                        println!("TODO new delete");
+                        self.configs.configs.remove(index);
+                        index = 0;
+                        self.has_selected = 0;
+                        //记得需要保存配置
+                        self.configs.save_to_file(self.config_path.to_str().expect("file is invalid")).expect("save config failed");
+                        need_break = true;
+                        return;
                     }
 
-                    if ui.button("Share").clicked(){
+                    if ui.button("Share").clicked() {
                         self.page_num = 3;
                     }
                 });
+
+                if need_break {
+                    return;
+                }
                 
                 // alway enable
                 ui.add_enabled_ui(true, |ui| {
@@ -215,6 +228,10 @@ impl MyApp {
                 });
             }
 
+            if need_break {
+                return;
+            }
+
             if self.started {
                 ui.set_enabled(false);
             } else {
@@ -231,7 +248,8 @@ impl MyApp {
 
             ui.end_row();
         });
-        
+
+        need_break
     }
 }
 
