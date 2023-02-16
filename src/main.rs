@@ -73,25 +73,32 @@ impl MyApp {
     fn main_page(&mut self,ui: &mut egui::Ui) {
         ui.heading("Trojan Tools");
         ui.separator();
+        ui.end_row();
         egui::ScrollArea::vertical()
             .max_height(200.0)
             //.max_width(150.0)
             .auto_shrink([false; 2])
             .show(ui, |ui| {
             
-            let item_count = self.configs.configs.len();
-            for item in 0..item_count {
-                let layout = egui::Layout::left_to_right(egui::Align::LEFT).with_main_justify(true);
-                ui.with_layout(layout,|ui|{
+            let layout = egui::Layout::from_main_dir_and_cross_align(egui::Direction::TopDown,egui::Align::Min)
+                .with_main_wrap(false)
+                .with_cross_justify(true);
+
+            ui.with_layout(layout,|ui|{
+                let item_count = self.configs.configs.len();
+                for item in 0..item_count {
                     if self.started {
                         ui.set_enabled(false);
                     } else {
                         ui.set_enabled(true);
                     }
-                    
+
                     ui.selectable_value(&mut self.has_selected, item, &self.configs.configs[item].remarks);
-                });
-            }
+                    
+                }
+            });
+
+            
         }).inner;
 
         ui.separator();
