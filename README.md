@@ -55,7 +55,17 @@ cargo build -r
 或者双击应用程序运行
 
 # 效果图
-![](media/screenshut-1.png)
+**主界面**
+
+![主界面](media/screenshot-main.png)
+
+**配置添加界面**
+
+![配置添加界面](media/screenshot-add-config.png)
+
+**配置分享界面**
+
+![配置分享界面](media/screenshot-share-config.png)
 
 # 协议参考
 [trojan protocol](https://trojan-gfw.github.io/trojan/protocol)

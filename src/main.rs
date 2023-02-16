@@ -11,7 +11,7 @@ use trojan_ui::utils;
 
 fn main() {
     let options = eframe::NativeOptions {
-        initial_window_size: Some(egui::vec2(320.0, 280.0)),
+        initial_window_size: Some(egui::vec2(320.0, 480.0)),
         resizable: false,
         ..Default::default()
     };
@@ -75,7 +75,7 @@ impl MyApp {
         ui.separator();
         ui.end_row();
         egui::ScrollArea::vertical()
-            .max_height(200.0)
+            .max_height(400.0)
             //.max_width(150.0)
             .auto_shrink([false; 2])
             .show(ui, |ui| {
