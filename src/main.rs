@@ -149,6 +149,7 @@ impl MyApp {
     }
 
     fn import_config_page(&mut self,ui: &mut egui::Ui) {
+        self.input_url = "".to_string();
         ui.heading("Add Config");
         ui.separator();
         ui.add(egui::TextEdit::singleline(&mut self.input_url).hint_text("trojan://password@domain:port#remarks"));
