@@ -56,6 +56,7 @@ impl Default for MyApp {
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
+            ui.set_width(100.0);
             ui.vertical(|ui| {
                 match self.page_num {
                     1 => self.import_config_page(ui),
@@ -79,26 +80,15 @@ impl MyApp {
             //.max_width(150.0)
             .auto_shrink([false; 2])
             .show(ui, |ui| {
-            
-            let layout = egui::Layout::from_main_dir_and_cross_align(egui::Direction::TopDown,egui::Align::Min)
-                .with_main_wrap(false)
-                .with_cross_justify(true);
-
-            ui.with_layout(layout,|ui|{
-                let item_count = self.configs.configs.len();
-                for item in 0..item_count {
-                    if self.started {
-                        ui.set_enabled(false);
-                    } else {
-                        ui.set_enabled(true);
-                    }
-
-                    ui.selectable_value(&mut self.has_selected, item, &self.configs.configs[item].remarks);
-                    
-                }
-            });
-
-            
+            if self.started {
+                ui.set_enabled(false);
+            } else {
+                ui.set_enabled(true);
+            }
+            let item_count = self.configs.configs.len();
+            for item in 0..item_count {
+                self.config_item_show(ui,item);
+            }
         }).inner;
 
         ui.separator();
@@ -208,6 +198,36 @@ impl MyApp {
         if ui.button("Back").clicked() {
             self.page_num = 0;
         }
+    }
+
+    fn config_item_show(&mut self,ui: &mut egui::Ui,index: usize) {
+        ui.horizontal(|ui|{
+            if index == self.has_selected {
+                if ui.button("Edit").clicked(){
+                    println!("TODO new edit");
+                }
+
+                if ui.button("Delete").clicked(){
+                    println!("TODO new delete");
+                }
+
+                if ui.button("Share").clicked(){
+                    println!("TODO new share");
+                }
+
+                if ui.button("Start").clicked(){
+                    println!("TODO new start");
+                }
+            }
+            let layout = egui::Layout::from_main_dir_and_cross_align(egui::Direction::TopDown,egui::Align::Min)
+                .with_main_wrap(false)
+                .with_cross_justify(true);
+
+            ui.with_layout(layout,|ui|{
+                ui.selectable_value(&mut self.has_selected, index, &self.configs.configs[index].remarks);
+            });
+        });
+        
     }
 }
 
