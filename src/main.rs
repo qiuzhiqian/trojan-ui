@@ -11,7 +11,7 @@ use trojan_ui::utils;
 
 fn main() {
     let options = eframe::NativeOptions {
-        initial_window_size: Some(egui::vec2(320.0, 480.0)),
+        initial_window_size: Some(egui::vec2(520.0, 480.0)),
         resizable: false,
         ..Default::default()
     };
@@ -201,7 +201,8 @@ impl MyApp {
     }
 
     fn config_item_show(&mut self,ui: &mut egui::Ui,index: usize) {
-        ui.horizontal(|ui|{
+        let layout = egui::Layout::right_to_left(egui::Align::Max).with_cross_align(egui::Align::Min);
+        ui.with_layout(layout, |ui|{
             if index == self.has_selected {
                 if ui.button("Edit").clicked(){
                     println!("TODO new edit");
@@ -219,6 +220,8 @@ impl MyApp {
                     println!("TODO new start");
                 }
             }
+
+            //让里面的元素占满整个布局，该项必须是整个父布局的最后一下，如果不是的话，考虑左右或者上下翻转的方式。
             let layout = egui::Layout::from_main_dir_and_cross_align(egui::Direction::TopDown,egui::Align::Min)
                 .with_main_wrap(false)
                 .with_cross_justify(true);
