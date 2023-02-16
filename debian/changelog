@@ -1,3 +1,9 @@
+trojan-ui (0.2.2) unstable; urgency=medium
+
+  * 优化界面显示效果.
+
+ -- xiamengliang <xiamengliang@gmail.com>  Mon, 16 Feb 2023 14:04:52 +0800
+
 trojan-ui (0.2.1) unstable; urgency=medium
 
   * Initial Release.
