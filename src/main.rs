@@ -80,11 +80,6 @@ impl MyApp {
             //.max_width(150.0)
             .auto_shrink([false; 2])
             .show(ui, |ui| {
-            if self.started {
-                ui.set_enabled(false);
-            } else {
-                ui.set_enabled(true);
-            }
             let item_count = self.configs.configs.len();
             for item in 0..item_count {
                 self.config_item_show(ui,item);
@@ -103,37 +98,8 @@ impl MyApp {
                 self.page_num = 1;
             }
 
-            if ui.button("Edit").clicked() {
-                println!("TODO Edit item...");
-                self.page_num = 2;
-            }
-
-            if ui.button("Share").clicked() {
-                self.page_num = 3;
-            }
-
             if ui.button("About").clicked() {
                 self.page_num = 4;
-            }
-
-            let start_label=vec!["Start","Stop"];
-            let current_index = if !self.started {
-                0
-            } else {
-                1
-            };
-            if ui.button(start_label[current_index]).clicked() {
-                if !self.started {
-                    let config = &self.configs.configs[self.has_selected as usize];
-                    self.send = proxy::start(config);
-                } else {
-                    if let Some(s) = &self.send {
-                        proxy::stop(s);
-                        self.send = None;
-                    }
-                }
-                
-                self.started = !self.started;
             }
         });
     }
@@ -203,24 +169,57 @@ impl MyApp {
     fn config_item_show(&mut self,ui: &mut egui::Ui,index: usize) {
         let layout = egui::Layout::right_to_left(egui::Align::Max).with_cross_align(egui::Align::Min);
         ui.with_layout(layout, |ui|{
+            
             if index == self.has_selected {
-                if ui.button("Edit").clicked(){
-                    println!("TODO new edit");
-                }
+                let button_enabled = if self.started {
+                    false
+                } else {
+                    true
+                };
+                ui.add_enabled_ui(button_enabled,|ui|{
+                    if ui.button("Edit").clicked(){
+                        self.page_num = 2;
+                    }
 
-                if ui.button("Delete").clicked(){
-                    println!("TODO new delete");
-                }
+                    if ui.button("Delete").clicked(){
+                        println!("TODO new delete");
+                    }
 
-                if ui.button("Share").clicked(){
-                    println!("TODO new share");
-                }
-
-                if ui.button("Start").clicked(){
-                    println!("TODO new start");
-                }
+                    if ui.button("Share").clicked(){
+                        self.page_num = 3;
+                    }
+                });
+                
+                // alway enable
+                ui.add_enabled_ui(true, |ui| {
+                    let start_label=vec!["Start","Stop"];
+                    let current_index = if !self.started {
+                        0
+                    } else {
+                        1
+                    };
+                    
+                    if ui.button(start_label[current_index]).clicked() {
+                        if !self.started {
+                            let config = &self.configs.configs[self.has_selected as usize];
+                            self.send = proxy::start(config);
+                        } else {
+                            if let Some(s) = &self.send {
+                                proxy::stop(s);
+                                self.send = None;
+                            }
+                        }
+                        
+                        self.started = !self.started;
+                    }
+                });
             }
 
+            if self.started {
+                ui.set_enabled(false);
+            } else {
+                ui.set_enabled(true);
+            }
             //让里面的元素占满整个布局，该项必须是整个父布局的最后一下，如果不是的话，考虑左右或者上下翻转的方式。
             let layout = egui::Layout::from_main_dir_and_cross_align(egui::Direction::TopDown,egui::Align::Min)
                 .with_main_wrap(false)
@@ -229,6 +228,8 @@ impl MyApp {
             ui.with_layout(layout,|ui|{
                 ui.selectable_value(&mut self.has_selected, index, &self.configs.configs[index].remarks);
             });
+
+            ui.end_row();
         });
         
     }
