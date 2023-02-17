@@ -173,11 +173,11 @@ impl MyApp {
     }
 
     fn about_page(&mut self,ui: &mut egui::Ui) {
-        let version = env!("CARGO_PKG_VERSION");
+        //let version = env!("CARGO_PKG_VERSION");
         ui.heading("About");
         ui.separator();
-        ui.label(format!("Version: {}",version));
-        ui.label(format!("Auth: {}<{}>","xiamengliang","xiamengliang@gmail.com"));
+        ui.label(format!("Version: {}",env!("CARGO_PKG_VERSION")));
+        ui.label(format!("Auth: {}",env!("CARGO_PKG_AUTHORS")));
         if ui.button("⮪").on_hover_text("Back").clicked() {
             self.page_num = 0;
         }

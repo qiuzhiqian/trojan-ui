@@ -3,6 +3,8 @@ name = "trojan_ui"
 version = "0.2.3"
 edition = "2021"
 
+authors = ["xiamengliang <xiamengliang@gmail.com>"]
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
