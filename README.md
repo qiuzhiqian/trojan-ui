@@ -57,15 +57,18 @@ cargo build -r
 # 效果图
 **主界面**
 
-![主界面](media/screenshot-main.png)
+![主界面](media/screenshot-main-light.png) 
+![主界面](media/screenshot-main-dark.png)
 
 **配置添加界面**
 
-![配置添加界面](media/screenshot-add-config.png)
+![配置添加界面](media/screenshot-add-config-light.png)
+![配置添加界面](media/screenshot-add-config-dark.png)
 
 **配置分享界面**
 
-![配置分享界面](media/screenshot-share-config.png)
+![配置分享界面](media/screenshot-share-config-light.png)
+![配置分享界面](media/screenshot-share-config-dark.png)
 
 # 协议参考
 [trojan protocol](https://trojan-gfw.github.io/trojan/protocol)
@@ -87,3 +90,4 @@ cargo build -r
 5. 添加流量统计功能
 6. 全局代理
 7. 开机自启
+8. 明亮和暗色主题切换

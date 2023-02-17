@@ -11,7 +11,7 @@ use trojan_ui::utils;
 
 fn main() {
     let options = eframe::NativeOptions {
-        initial_window_size: Some(egui::vec2(520.0, 480.0)),
+        initial_window_size: Some(egui::vec2(420.0, 480.0)),
         resizable: false,
         ..Default::default()
     };
@@ -32,6 +32,7 @@ struct MyApp {
     input_url: String,
     page_num: u8,
     config_path: std::path::PathBuf,
+    dark_mode: bool,
 }
 
 impl Default for MyApp {
@@ -47,6 +48,7 @@ impl Default for MyApp {
             input_url: "".to_string(),
             page_num: 0,
             config_path: path,
+            dark_mode: false,
         };
 
         return app;
@@ -58,10 +60,19 @@ impl eframe::App for MyApp {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.set_width(100.0);
             ui.vertical(|ui| {
+                let style: egui::Style = (*ui.ctx().style()).clone();
+                if self.dark_mode != style.visuals.dark_mode {
+                    if self.dark_mode {
+                        ui.ctx().set_visuals(egui::style::Visuals::dark());
+                    } else {
+                        ui.ctx().set_visuals(egui::style::Visuals::light());
+                    }
+                }
                 match self.page_num {
                     1 => self.import_config_page(ui),
                     3 => self.share_config_page(ui),
                     4 => self.about_page(ui),
+                    5 => self.settings_page(ui),
                     _ => self.main_page(ui),
                 };
                 
@@ -95,12 +106,16 @@ impl MyApp {
             }else {
                 ui.set_enabled(true);
             }
-            if ui.button("Add").clicked() {
-                println!("Add item...");
+
+            if ui.button("☸").on_hover_text("Settings").clicked() {
+                self.page_num = 5;
+            }
+
+            if ui.button("➕").on_hover_text("Add").clicked() {
                 self.page_num = 1;
             }
 
-            if ui.button("About").clicked() {
+            if ui.button("❗").on_hover_text("About").clicked() {
                 self.page_num = 4;
             }
         });
@@ -110,7 +125,7 @@ impl MyApp {
         ui.heading("Add Config");
         ui.separator();
         ui.add(egui::TextEdit::singleline(&mut self.input_url).hint_text("trojan://password@domain:port#remarks"));
-        if ui.button("Back").clicked() {
+        if ui.button("⮪").on_hover_text("Back").clicked() {
             if let Ok(config) = trojan_ui::config::Config::from_url(&self.input_url){
                 self.configs.configs.push(config);
                 self.configs.save_to_file(self.config_path.to_str().expect("file is invalid")).expect("save config failed");
@@ -127,7 +142,7 @@ impl MyApp {
         self.show_qrcode(ui,&url,185);
 
         ui.label(&url);
-        if ui.button("Back").clicked() {
+        if ui.button("⮪").on_hover_text("Back").clicked() {
             self.page_num = 0;
         }
     }
@@ -163,7 +178,7 @@ impl MyApp {
         ui.separator();
         ui.label(format!("Version: {}",version));
         ui.label(format!("Auth: {}<{}>","xiamengliang","xiamengliang@gmail.com"));
-        if ui.button("Back").clicked() {
+        if ui.button("⮪").on_hover_text("Back").clicked() {
             self.page_num = 0;
         }
     }
@@ -180,16 +195,19 @@ impl MyApp {
                     true
                 };
                 ui.add_enabled_ui(button_enabled,|ui|{
-                    ui.spacing_mut().item_spacing.x = 1.0;
-                    if ui.button("Share").clicked() {
+                    ui.spacing_mut().item_spacing.x = 2.0;
+                    // Share
+                    if ui.button("⌘").on_hover_text("Share").clicked() {
                         self.page_num = 3;
                     }
                     
-                    if ui.button("Edit").clicked(){
+                    // Edit
+                    if ui.button("🖊").on_hover_text("Edit").clicked(){
                         self.page_num = 2;
                     }
 
-                    if ui.button("Delete").clicked(){
+                    // Delete
+                    if ui.button("🗑").on_hover_text("Delete").clicked(){
                         self.configs.configs.remove(index);
                         index = 0;
                         self.has_selected = 0;
@@ -206,7 +224,7 @@ impl MyApp {
                 //ui.separator();
                 // alway enable
                 ui.add_enabled_ui(true, |ui| {
-                    let start_label=vec!["Start","Stop"];
+                    let start_label=vec!["▶","⏹"];
                     let current_index = if !self.started {
                         0
                     } else {
@@ -251,6 +269,18 @@ impl MyApp {
         });
 
         need_break
+    }
+
+    fn settings_page(&mut self,ui: &mut egui::Ui) {
+        ui.horizontal(|ui|{
+            ui.label("Dark Mode: ");
+            ui.add(trojan_ui::components:: toggle_switch::toggle(&mut self.dark_mode)).on_hover_text(
+                "dark mode?",
+            );
+        });
+        if ui.button("⮪").on_hover_text("Back").clicked() {
+            self.page_num = 0;
+        }
     }
 }
 
