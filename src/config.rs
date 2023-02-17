@@ -66,7 +66,7 @@ impl Config {
     }
 
     pub fn to_url(&self) -> String {
-        format!("trojan://{}@{}:{}#{}",self.password,self.client,self.client_port,self.remarks)
+        format!("trojan://{}@{}:{}#{}",self.password,self.server,self.server_port,self.remarks)
     }
 }
 

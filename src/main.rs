@@ -180,6 +180,11 @@ impl MyApp {
                     true
                 };
                 ui.add_enabled_ui(button_enabled,|ui|{
+                    ui.spacing_mut().item_spacing.x = 1.0;
+                    if ui.button("Share").clicked() {
+                        self.page_num = 3;
+                    }
+                    
                     if ui.button("Edit").clicked(){
                         self.page_num = 2;
                     }
@@ -193,16 +198,12 @@ impl MyApp {
                         need_break = true;
                         return;
                     }
-
-                    if ui.button("Share").clicked() {
-                        self.page_num = 3;
-                    }
                 });
 
                 if need_break {
                     return;
                 }
-                
+                //ui.separator();
                 // alway enable
                 ui.add_enabled_ui(true, |ui| {
                     let start_label=vec!["Start","Stop"];
