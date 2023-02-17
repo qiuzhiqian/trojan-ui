@@ -281,6 +281,7 @@ impl MyApp {
             );
         });
         if ui.button("⮪").on_hover_text("Back").clicked() {
+            self.configs.save_to_file(self.config_path.to_str().expect("file is invalid")).expect("save config failed");
             self.page_num = 0;
         }
     }
