@@ -1,13 +1,19 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 
+pub mod utils;
+pub mod config;
+pub mod proxy;
+pub mod components;
+
 use eframe::egui;
 use egui_extras::RetainedImage;
 use std::path::PathBuf;
 use std::vec;
 
-use trojan_ui::config::ConfigList;
-use trojan_ui::proxy;
-use trojan_ui::utils;
+use crate::config::{ConfigList,Config};
+//use crate::proxy;
+//use crate::utils;
+//use crate::proxy::config;
 
 fn main() {
     let options = eframe::NativeOptions {
@@ -126,7 +132,7 @@ impl MyApp {
         ui.separator();
         ui.add(egui::TextEdit::singleline(&mut self.input_url).hint_text("trojan://password@domain:port#remarks"));
         if ui.button("⮪").on_hover_text("Back").clicked() {
-            if let Ok(config) = trojan_ui::config::Config::from_url(&self.input_url){
+            if let Ok(config) = Config::from_url(&self.input_url){
                 self.configs.configs.push(config);
                 self.configs.save_to_file(self.config_path.to_str().expect("file is invalid")).expect("save config failed");
             }
@@ -274,7 +280,7 @@ impl MyApp {
     fn settings_page(&mut self,ui: &mut egui::Ui) {
         ui.horizontal(|ui|{
             ui.label("Dark Mode: ");
-            ui.add(trojan_ui::components:: toggle_switch::toggle(&mut self.dark_mode)).on_hover_text(
+            ui.add(components::toggle_switch::toggle(&mut self.dark_mode)).on_hover_text(
                 "dark mode?",
             );
         });
