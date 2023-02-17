@@ -1,6 +1,6 @@
 [package]
 name = "trojan_ui"
-version = "0.2.3"
+version = "0.2.4"
 edition = "2021"
 
 description = "This is a trojan ui tool written in rust"
@@ -22,6 +22,7 @@ image = "0.24.5"
 
 [package.metadata.deb]
 assets = [
+    ["target/release/trojan_ui", "usr/bin/", "755"],
     ["config/trojan_ui.desktop", "usr/share/applications/", "644"],
     ["config/trojan_ui.svg", "usr/share/icons/hicolor/scalable/apps/trojan_ui.svg", "644"],
 ]
