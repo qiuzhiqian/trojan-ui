@@ -38,13 +38,12 @@ struct MyApp {
     input_url: String,
     page_num: u8,
     config_path: std::path::PathBuf,
-    dark_mode: bool,
+    //dark_mode: bool,
 }
 
 impl Default for MyApp {
     fn default() -> Self {
-        let path = find_config_file("config.json").expect("No configuration files could be found");
-        let config_list = ConfigList::new_from_file(path.to_str().expect("is not vaild path")).expect("config is invalid");
+        let (config_list,path) = load_config("config.json").expect("create config path failed");
 
         let app = Self {
             configs: config_list,
@@ -54,7 +53,7 @@ impl Default for MyApp {
             input_url: "".to_string(),
             page_num: 0,
             config_path: path,
-            dark_mode: false,
+            //dark_mode: false,
         };
 
         return app;
@@ -67,8 +66,8 @@ impl eframe::App for MyApp {
             ui.set_width(100.0);
             ui.vertical(|ui| {
                 let style: egui::Style = (*ui.ctx().style()).clone();
-                if self.dark_mode != style.visuals.dark_mode {
-                    if self.dark_mode {
+                if self.configs.dark_mode != style.visuals.dark_mode {
+                    if self.configs.dark_mode {
                         ui.ctx().set_visuals(egui::style::Visuals::dark());
                     } else {
                         ui.ctx().set_visuals(egui::style::Visuals::light());
@@ -107,19 +106,16 @@ impl MyApp {
 
         ui.separator();
         ui.horizontal(|ui|{
-            if self.configs.configs.is_empty() {
-                ui.set_enabled(false);
-            }else {
-                ui.set_enabled(true);
-            }
-
             if ui.button("☸").on_hover_text("Settings").clicked() {
                 self.page_num = 5;
             }
 
-            if ui.button("➕").on_hover_text("Add").clicked() {
-                self.page_num = 1;
-            }
+            ui.add_enabled_ui(!self.started,|ui|{
+                if ui.button("➕").on_hover_text("Add").clicked() {
+                    self.page_num = 1;
+                }
+            });
+            
 
             if ui.button("❗").on_hover_text("About").clicked() {
                 self.page_num = 4;
@@ -280,7 +276,7 @@ impl MyApp {
     fn settings_page(&mut self,ui: &mut egui::Ui) {
         ui.horizontal(|ui|{
             ui.label("Dark Mode: ");
-            ui.add(components::toggle_switch::toggle(&mut self.dark_mode)).on_hover_text(
+            ui.add(components::toggle_switch::toggle(&mut self.configs.dark_mode)).on_hover_text(
                 "dark mode?",
             );
         });
@@ -296,40 +292,83 @@ impl MyApp {
 // $HOME/.config/trojan_ui/config.json
 // /etc/trojan_ui/config.json
 fn find_config_file(name: &str) -> std::io::Result<PathBuf>{
-    {
-        let mut path = utils::get_current_dir()?;
-        //path.push("trojan_ui");
-        path.push(name);
-        if path.is_file() {
-            return Ok(path);
-        }
-    }
+    let valid =  match utils::get_current_dir() {
+        Ok(mut path) => {
+            path.push(name);
+            if path.is_file()  {
+                return Ok(path);
+            } else {
+                false
+            }
+        },
+        Err(_) => false,
+    };
     
+    if !valid {
+        let valid = match find_user_config_dir() {
+            Ok(mut path) => {
+                path.push(name);
+                if path.is_file()  {
+                    return Ok(path);
+                } else {
+                    false
+                }
+            },
+            Err(_) => false,
+        };
 
-    if let Ok(val) = std::env::var("XDG_CONFIG_HOME") {
-        let mut path = PathBuf::from(val);
-        path.push("trojan_ui");
-        path.push(name);
-        if path.is_file() {
-            return Ok(path);
+        if !valid {
+            let mut path = PathBuf::from("/etc/trojan_ui");
+            path.push(name);
+            if path.is_file() {
+                return Ok(path);
+            }
         }
-    }
-
-    if let Ok(val) = std::env::var("HOME") {
-        let mut path = PathBuf::from(val);
-        path.push(".config");
-        path.push("trojan_ui");
-        path.push(name);
-        if path.is_file() {
-            return Ok(path);
-        }
-    }
-
-    let mut path = PathBuf::from("/etc/trojan_ui");
-    path.push(name);
-    if path.is_file() {
-        return Ok(path);
     }
 
     return Err(std::io::Error::new(std::io::ErrorKind::NotFound, "file find failed"));
+}
+
+fn find_user_config_dir() ->std::io::Result<PathBuf> {
+    let config_val = match std::env::var("XDG_CONFIG_HOME") {
+        Ok(val) => val,
+        Err(_) => {
+            match std::env::var("HOME") {
+                Ok(val) => val,
+                Err(e) => {return Err(std::io::Error::new(std::io::ErrorKind::NotFound, e));},
+            }
+        }
+    };
+
+    let mut path = PathBuf::from(config_val);
+    path.push("trojan_ui");
+    if !path.exists() {
+        // 不存在用户配置目录，则创建该目录
+        std::fs::create_dir_all(path.clone())?;
+
+    } else if !path.is_dir() {
+        return Err(std::io::Error::new(std::io::ErrorKind::NotFound, format!("{} is not directory",path.to_str().expect("the path name is invalid"))));
+    }
+    Ok(path)
+}
+
+fn load_config(name:&str) -> std::io::Result<(ConfigList,PathBuf)> {
+    match find_config_file(name) {
+        Ok(path) => {
+            return Ok((ConfigList::new_from_file(path.to_str().expect("is not vaild path")).expect("config is invalid"),path));
+        },
+        Err(_) => {
+            // config is not exist.Create new config
+            match find_user_config_dir() {
+                Ok(mut path) => {
+                    std::fs::create_dir_all(path.clone())?;
+                    path.push(name);
+                    let config_list = ConfigList::default();
+                    config_list.save_to_file(path.to_str().expect("file path is invalid"))?;
+                    return Ok((config_list,path));
+                },
+                Err(e) => {return Err(e);},
+            }
+        }
+    }
 }

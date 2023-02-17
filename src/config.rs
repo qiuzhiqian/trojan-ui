@@ -17,6 +17,8 @@ pub struct Config {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ConfigList {
+    pub version: u32,
+    pub dark_mode: bool,
     pub configs: Vec<Config>,
 }
 
@@ -37,7 +39,7 @@ impl Config {
     // trojan://password@domain:port?security=tls&type=tcp&headerType=none#remark
     pub fn from_url(url:&str) -> std::io::Result<Self> {
         // ([-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]):([0-9]*)/(.*)
-        let re = Regex::new(r"^trojan://(?P<passwd>[^@]+)@(?P<domain>[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]*):(?P<port>[0-9]{1,5})[^#]+#(?P<remarks>[-A-Za-z0-9+&@#/%=~_|.]+)$").map_err(|err|{
+        let re = Regex::new(r"^trojan://(?P<passwd>[^@]+)@(?P<domain>[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]*):(?P<port>[0-9]{1,5})#(?P<remarks>[-A-Za-z0-9+&@#/%=~_|.]+)$").map_err(|err|{
             std::io::Error::new(std::io::ErrorKind::InvalidData, err.to_string())
         })?;
 
@@ -50,6 +52,7 @@ impl Config {
         let domain = caps.name("domain").unwrap().as_str().to_string();
         let port_str = caps.name("port").unwrap().as_str().to_string();
         let remarks = caps.name("remarks").unwrap().as_str().to_string();
+        println!("port:{}",port_str);
 
         let port = port_str.parse::<u16>().unwrap();//String to int
 
@@ -71,6 +74,13 @@ impl Config {
 }
 
 impl ConfigList{
+    pub fn default() -> Self {
+        Self {
+            version: 1,
+            dark_mode: false,
+            configs: Vec::new(),
+        }
+    }
     pub fn new_from_file(file: &str) -> std::io::Result<Self> {
         let f = std::fs::File::open(file).unwrap();
         let values:ConfigList = serde_json::from_reader(f)?;
