@@ -3,7 +3,9 @@ name = "trojan_ui"
 version = "0.2.3"
 edition = "2021"
 
+description = "This is a trojan ui tool written in rust"
 authors = ["xiamengliang <xiamengliang@gmail.com>"]
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -17,3 +19,9 @@ tokio = { version = "1", features = ["full"] }
 regex = "1"
 fast_qr = "0.8.3"
 image = "0.24.5"
+
+[package.metadata.deb]
+assets = [
+    ["config/trojan_ui.desktop", "usr/share/applications/", "644"],
+    ["config/trojan_ui.svg", "usr/share/icons/hicolor/scalable/apps/trojan_ui.svg", "644"],
+]
