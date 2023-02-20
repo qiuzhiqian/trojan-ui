@@ -6,36 +6,36 @@
 # 配置
 配置文件需要是json格式的，并且文件名称必须为config.json。
 具体路径有如下选择：
-- 当前二进制路径/config.json
 - $XDG_CONFIG_HOME/trojan_ui/config.json
 - $HOME/trojan_ui/config.json
-- /etc/trojan_ui/config.json
 
 下面给出一个可用的配置例子：
 ```
 {
-    "configs": [
-      {
-        "remarks": "example",
-        "server": "example.com",
-        "server_port": 443,
-        "client": "127.0.0.1",
-        "client_port": 1080,
-        "sni": "example.com",
-        "password": "dfasidfallljfa",
-        "verify": true
-      },
-      {
-        "remarks": "test",
-        "server": "test.cn",
-        "server_port": 443,
-        "client": "127.0.0.1",
-        "client_port": 1080,
-        "sni": "test.cn",
-        "password": "fasdfjlsdfwwer",
-        "verify": true
-      }
-    ]
+  "version":1,
+  "dark_mode":false,
+  "configs":[
+    {
+      "remarks":"example",
+      "server":"example.com",
+      "server_port":443,
+      "client":"127.0.0.1",
+      "client_port":1080,
+      "sni":"",
+      "password":"fawiefaslclaisf",
+      "verify":true
+    },
+    {
+      "remarks": "test",
+      "server": "test.cn",
+      "server_port": 443,
+      "client": "127.0.0.1",
+      "client_port": 1080,
+      "sni": "test.cn",
+      "password": "fasdfjlsdfwwer",
+      "verify": true
+    }
+  ]
 }
 ```
 
@@ -79,8 +79,9 @@ cargo build -r
 1. trojan协议代理
 2. socks5支持
 3. 多配置支持和选择
-4. 配置添加，支持通过url方式添加配置
+4. 配置添加，支持通过url方式添加配置以及配置删除
 5. 支持通过二维码方式分享配置
+6. 明亮和暗色主题切换
 
 # TODO
 1. 界面美化
@@ -90,4 +91,3 @@ cargo build -r
 5. 添加流量统计功能
 6. 全局代理
 7. 开机自启
-8. 明亮和暗色主题切换

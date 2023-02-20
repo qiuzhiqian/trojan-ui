@@ -35,6 +35,7 @@ struct MyApp {
     has_selected: usize,
     started: bool,
     send: Option<tokio::sync::mpsc::Sender<bool>>,
+    proxy_state: Option<std::sync::Arc<std::sync::Mutex<proxy::ThreadState>>>,
     input_url: String,
     page_num: u8,
     config_path: std::path::PathBuf,
@@ -50,6 +51,7 @@ impl Default for MyApp {
             has_selected: 0,
             started: false,
             send: None,
+            proxy_state: None,
             input_url: "".to_string(),
             page_num: 0,
             config_path: path,
@@ -71,6 +73,15 @@ impl eframe::App for MyApp {
                         ui.ctx().set_visuals(egui::style::Visuals::dark());
                     } else {
                         ui.ctx().set_visuals(egui::style::Visuals::light());
+                    }
+                }
+                if  let Some(s) = self.proxy_state.clone() {
+                    let state = s.lock().unwrap();
+                    //let thread_state = *state;
+                    match &*state {
+                        proxy::ThreadState::EXIT => println!("exit normal"),
+                        proxy::ThreadState::ABORT(s) => println!("exit err {}",s),
+                        _ => println!("is normal"),
                     }
                 }
                 match self.page_num {
@@ -106,7 +117,7 @@ impl MyApp {
 
         ui.separator();
         ui.horizontal(|ui|{
-            if ui.button("☸").on_hover_text("Settings").clicked() {
+            if ui.button("⚙").on_hover_text("Settings").clicked() {
                 self.page_num = 5;
             }
 
@@ -191,12 +202,13 @@ impl MyApp {
         ui.with_layout(layout, |ui|{
             
             if index == self.has_selected {
-                let button_enabled = if self.started {
-                    false
-                } else {
-                    true
-                };
-                ui.add_enabled_ui(button_enabled,|ui|{
+                ui.add_enabled_ui(self.started, |ui|{
+                    if ui.button("⚖").on_hover_text("Test").clicked() {
+                        proxy::test("www.google.com");
+                    }
+                });
+
+                ui.add_enabled_ui(!self.started,|ui|{
                     ui.spacing_mut().item_spacing.x = 2.0;
                     // Share
                     if ui.button("⌘").on_hover_text("Share").clicked() {
@@ -236,7 +248,7 @@ impl MyApp {
                     if ui.button(start_label[current_index]).clicked() {
                         if !self.started {
                             let config = &self.configs.configs[self.has_selected as usize];
-                            self.send = proxy::start(config);
+                            (self.send,self.proxy_state) = proxy::start(config);
                         } else {
                             if let Some(s) = &self.send {
                                 proxy::stop(s);
@@ -288,88 +300,28 @@ impl MyApp {
 }
 
 
-// /current_dir/config.json
 // $XDG_CONFIG_HOME/trojan_ui/config.json
 // $HOME/.config/trojan_ui/config.json
-// /etc/trojan_ui/config.json
 fn find_config_file(name: &str) -> std::io::Result<PathBuf>{
-    let valid =  match utils::get_current_dir() {
-        Ok(mut path) => {
-            path.push(name);
-            if path.is_file()  {
-                return Ok(path);
-            } else {
-                false
-            }
-        },
-        Err(_) => false,
-    };
-    
-    if !valid {
-        let valid = match find_user_config_dir() {
-            Ok(mut path) => {
-                path.push(name);
-                if path.is_file()  {
-                    return Ok(path);
-                } else {
-                    false
-                }
-            },
-            Err(_) => false,
-        };
-
-        if !valid {
-            let mut path = PathBuf::from("/etc/trojan_ui");
-            path.push(name);
-            if path.is_file() {
-                return Ok(path);
-            }
-        }
-    }
-
-    return Err(std::io::Error::new(std::io::ErrorKind::NotFound, "file find failed"));
-}
-
-fn find_user_config_dir() ->std::io::Result<PathBuf> {
-    let config_val = match std::env::var("XDG_CONFIG_HOME") {
-        Ok(val) => val,
-        Err(_) => {
-            match std::env::var("HOME") {
-                Ok(val) => val,
-                Err(e) => {return Err(std::io::Error::new(std::io::ErrorKind::NotFound, e));},
-            }
-        }
-    };
-
-    let mut path = PathBuf::from(config_val);
-    path.push("trojan_ui");
+    let mut path = utils::user_config_dir()?;
     if !path.exists() {
-        // 不存在用户配置目录，则创建该目录
         std::fs::create_dir_all(path.clone())?;
-
     } else if !path.is_dir() {
-        return Err(std::io::Error::new(std::io::ErrorKind::NotFound, format!("{} is not directory",path.to_str().expect("the path name is invalid"))));
+        return Err(std::io::Error::new(std::io::ErrorKind::AlreadyExists, "the same name file exist"));
     }
+
+    path.push("trojan_ui");
+    path.push(name);
+
     Ok(path)
 }
 
 fn load_config(name:&str) -> std::io::Result<(ConfigList,PathBuf)> {
-    match find_config_file(name) {
-        Ok(path) => {
-            return Ok((ConfigList::new_from_file(path.to_str().expect("is not vaild path")).expect("config is invalid"),path));
-        },
-        Err(_) => {
-            // config is not exist.Create new config
-            match find_user_config_dir() {
-                Ok(mut path) => {
-                    std::fs::create_dir_all(path.clone())?;
-                    path.push(name);
-                    let config_list = ConfigList::default();
-                    config_list.save_to_file(path.to_str().expect("file path is invalid"))?;
-                    return Ok((config_list,path));
-                },
-                Err(e) => {return Err(e);},
-            }
-        }
-    }
+    let path = find_config_file(name)?;
+    if !path.exists() {
+        let config_list = ConfigList::default();
+        config_list.save_to_file(path.to_str().expect("file path is invalid"))?;
+        return Ok((config_list,path));
+    } 
+    return Ok((ConfigList::new_from_file(path.to_str().expect("is not vaild path")).expect("config is invalid"),path));
 }

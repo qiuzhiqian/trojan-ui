@@ -55,3 +55,40 @@ pub fn get_files(path: PathBuf,suffix: &str) -> Vec<String> {
 
     return result;
 }
+
+pub fn user_config_dir() ->std::io::Result<PathBuf> {
+    if cfg!(target_os = "windows") {
+        match std::env::var("APPDATA") {
+            Ok(val) => {
+                Ok(PathBuf::from(val))
+            },
+            Err(_) => {
+                match std::env::var("HOMEPATH") {
+                    Ok(val) => {
+                        let mut path = PathBuf::from(val);
+                        path.push("Application Data");
+                        Ok(path)
+                    },
+                    Err(e) => Err(std::io::Error::new(std::io::ErrorKind::NotFound,e)),
+                }
+            },
+        }
+    } else {
+        match std::env::var("XDG_CONFIG_HOME") {
+            Ok(val) => {
+                Ok(PathBuf::from(val))
+            },
+            Err(_) => {
+                match std::env::var("HOME") {
+                    Ok(val) => {
+                        let mut path = PathBuf::from(val);
+                        path.push(".config");
+                        Ok(path)
+                    },
+                    Err(e) => Err(std::io::Error::new(std::io::ErrorKind::NotFound,e)),
+                }
+            },
+        }
+    }
+    
+}
