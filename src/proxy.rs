@@ -43,6 +43,36 @@ pub fn stop(send: &Sender<bool>) {
     });
 }
 
-pub fn test(server:&str) {
-    println!("TODO test by {}",server);
+
+pub enum TestState{
+    WAITTING,
+    RUNNING,
+    SUCCESS(u32),
+    FAILED(String),
+}
+pub fn test(server:&str) -> Option<Arc<Mutex<TestState>>> {
+    let state:Arc<Mutex<TestState>> = std::sync::Arc::new(Mutex::new(TestState::WAITTING));
+    let thread_state = state.clone();
+    std::thread::spawn(move ||{
+        {
+            let mut sta = thread_state.lock().unwrap();
+            *sta = TestState::RUNNING;
+        }
+
+        let runtime = Runtime::new().unwrap();
+        if let Err(e) = runtime.block_on(run_proxy_test()) {
+            let mut sta = thread_state.lock().unwrap();
+            *sta = TestState::FAILED(e.to_string());
+        } else {
+            let mut sta = thread_state.lock().unwrap();
+            *sta = TestState::SUCCESS(123);
+        }
+        
+    });
+    return Some(state);
+}
+
+async fn run_proxy_test() -> reqwest::Result<()> {
+    // do socks5 client
+    return Ok(());
 }
