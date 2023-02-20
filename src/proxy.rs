@@ -25,11 +25,11 @@ pub fn start(config: &config::Config) -> (Option<Sender<bool>>,Option<Arc<Mutex<
         }
         let runtime = Runtime::new().unwrap();
         if let Err(e) = runtime.block_on(proxy.start(&mut recv)) {
-            println!("trojan runtime err:{}",e);
-            {
-                let mut sta = thread_state.lock().unwrap();
-                *sta = ThreadState::ABORT("proxy close".to_string());
-            }
+            let mut sta = thread_state.lock().unwrap();
+            *sta = ThreadState::ABORT(e.to_string());
+        } else {
+            let mut sta = thread_state.lock().unwrap();
+            *sta = ThreadState::EXIT;
         }
     });
     

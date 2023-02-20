@@ -76,13 +76,18 @@ impl eframe::App for MyApp {
                     }
                 }
                 if  let Some(s) = self.proxy_state.clone() {
-                    let state = s.lock().unwrap();
-                    //let thread_state = *state;
+                    let mut state = s.lock().unwrap();
                     match &*state {
-                        proxy::ThreadState::EXIT => println!("exit normal"),
-                        proxy::ThreadState::ABORT(s) => println!("exit err {}",s),
-                        _ => println!("is normal"),
+                        proxy::ThreadState::EXIT => println!("close normal"),
+                        proxy::ThreadState::ABORT(s) => {
+                            if self.started {
+                                self.started = false;
+                            }
+                            println!("exit err {}",s)
+                        },
+                        _ => (),
                     }
+                    *state = proxy::ThreadState::WAITTING;
                 }
                 match self.page_num {
                     1 => self.import_config_page(ui),
