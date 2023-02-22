@@ -72,7 +72,7 @@ pub fn test(server:&str) -> Option<Arc<Mutex<TestState>>> {
     return Some(state);
 }
 
-async fn run_proxy_test() -> reqwest::Result<()> {
+async fn run_proxy_test() -> std::io::Result<()> {
     // do socks5 client
     return Ok(());
 }

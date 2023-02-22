@@ -14,6 +14,7 @@ use crate::config::{ConfigList,Config};
 //use crate::proxy;
 //use crate::utils;
 //use crate::proxy::config;
+use notify_rust::{Notification,Timeout};
 
 fn main() {
     let options = eframe::NativeOptions {
@@ -83,7 +84,16 @@ impl eframe::App for MyApp {
                             if self.started {
                                 self.started = false;
                             }
-                            println!("exit err {}",s)
+                            
+                            let info = s.clone();
+                            std::thread::spawn(move ||{
+                                Notification::new()
+                                .summary("Trojan ui abort")
+                                .body(&format!("Trojan ui has a abort: {}.",info))
+                                .icon("trojan")
+                                .timeout(Timeout::Milliseconds(2000)) //milliseconds
+                                .show().unwrap();
+                            });
                         },
                         _ => (),
                     }
