@@ -50,9 +50,11 @@ pub enum TestState{
     SUCCESS(u32),
     FAILED(String),
 }
-pub fn test(server:&str) -> Option<Arc<Mutex<TestState>>> {
+pub fn proxy_test(server:&str,port:u16,proxy_ip:&str,proxy_port: u16) -> Option<Arc<Mutex<TestState>>> {
     let state:Arc<Mutex<TestState>> = std::sync::Arc::new(Mutex::new(TestState::WAITTING));
     let thread_state = state.clone();
+    let addr = server.to_string();
+    let ip = proxy_ip.to_string();
     std::thread::spawn(move ||{
         {
             let mut sta = thread_state.lock().unwrap();
@@ -60,19 +62,16 @@ pub fn test(server:&str) -> Option<Arc<Mutex<TestState>>> {
         }
 
         let runtime = Runtime::new().unwrap();
-        if let Err(e) = runtime.block_on(run_proxy_test()) {
+        let now = std::time::Instant::now();
+        if let Err(e) = runtime.block_on(trojan_rust::client_start(&addr,port,&ip,proxy_port)) {
             let mut sta = thread_state.lock().unwrap();
             *sta = TestState::FAILED(e.to_string());
         } else {
+            let elapsed_time = now.elapsed().as_millis() as u32;
             let mut sta = thread_state.lock().unwrap();
-            *sta = TestState::SUCCESS(123);
+            *sta = TestState::SUCCESS(elapsed_time);
         }
         
     });
     return Some(state);
-}
-
-async fn run_proxy_test() -> std::io::Result<()> {
-    // do socks5 client
-    return Ok(());
 }

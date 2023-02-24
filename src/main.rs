@@ -37,6 +37,7 @@ struct MyApp {
     started: bool,
     send: Option<tokio::sync::mpsc::Sender<bool>>,
     proxy_state: Option<std::sync::Arc<std::sync::Mutex<proxy::ThreadState>>>,
+    test_state: Option<std::sync::Arc<std::sync::Mutex<proxy::TestState>>>,
     input_url: String,
     page_num: u8,
     config_path: std::path::PathBuf,
@@ -53,6 +54,7 @@ impl Default for MyApp {
             started: false,
             send: None,
             proxy_state: None,
+            test_state: None,
             input_url: "".to_string(),
             page_num: 0,
             config_path: path,
@@ -99,6 +101,38 @@ impl eframe::App for MyApp {
                     }
                     *state = proxy::ThreadState::WAITTING;
                 }
+
+                if  let Some(s) = self.test_state.clone() {
+                    let mut state = s.lock().unwrap();
+                    match &*state {
+                        proxy::TestState::SUCCESS(ms) => {
+                            let safe_ms = *ms;
+                            println!("close normal {}",safe_ms);
+                            std::thread::spawn(move ||{
+                                Notification::new()
+                                .summary("test success")
+                                .body(&format!("Trojan ui test www.google.com delay: {}.",safe_ms))
+                                .icon("trojan")
+                                .timeout(Timeout::Milliseconds(2000)) //milliseconds
+                                .show().unwrap();
+                            });
+                        },
+                        proxy::TestState::FAILED(s) => {
+                            let info = s.clone();
+                            std::thread::spawn(move ||{
+                                Notification::new()
+                                .summary("test abort")
+                                .body(&format!("Trojan ui test www.google.com has a abort: {}.",info))
+                                .icon("trojan")
+                                .timeout(Timeout::Milliseconds(2000)) //milliseconds
+                                .show().unwrap();
+                            });
+                        },
+                        _ => (),
+                    }
+                    *state = proxy::TestState::WAITTING;
+                }
+
                 match self.page_num {
                     1 => self.import_config_page(ui),
                     3 => self.share_config_page(ui),
@@ -141,7 +175,6 @@ impl MyApp {
                     self.page_num = 1;
                 }
             });
-            
 
             if ui.button("❗").on_hover_text("About").clicked() {
                 self.page_num = 4;
@@ -219,7 +252,7 @@ impl MyApp {
             if index == self.has_selected {
                 ui.add_enabled_ui(self.started, |ui|{
                     if ui.button("⚖").on_hover_text("Test").clicked() {
-                        proxy::test("www.google.com");
+                        self.test_state = proxy::proxy_test("www.google.com",80,&self.configs.configs[index].client,self.configs.configs[index].client_port);
                     }
                 });
 
