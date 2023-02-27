@@ -1,5 +1,6 @@
 use std::path::{Path,PathBuf};
 
+/// Get the path to the current executable file
 pub fn get_current_dir() -> std::io::Result<PathBuf> {
     let mut path = std::env::current_exe()?;
     path.pop();
@@ -10,6 +11,7 @@ pub fn get_current_dir() -> std::io::Result<PathBuf> {
     Err(std::io::Error::new(std::io::ErrorKind::PermissionDenied, format!("{}",path.to_str().expect("path to str failed"))))
 }
 
+/// Find the path of the executable file with the specified name in the PATH environment variable path
 pub fn find_process(name: &str) -> String {
     if let Ok(mut path) = get_current_dir() {
         path.push(name);
@@ -56,6 +58,7 @@ pub fn get_files(path: PathBuf,suffix: &str) -> Vec<String> {
     return result;
 }
 
+/// Get the user configuration directory
 pub fn user_config_dir() ->std::io::Result<PathBuf> {
     if cfg!(target_os = "windows") {
         match std::env::var("APPDATA") {
