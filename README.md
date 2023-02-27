@@ -48,6 +48,11 @@ cargo build
 ```
 cargo build -r
 ```
+
+如果需要编译deb包，请确保正确安装了cargo-deb，并运行：
+```
+cargo deb
+```
 # 运行
 ```
 ./trojan-ui
@@ -69,11 +74,6 @@ cargo build -r
 
 ![配置分享界面](media/screenshot-share-config-light.png)
 ![配置分享界面](media/screenshot-share-config-dark.png)
-
-# 协议参考
-[trojan protocol](https://trojan-gfw.github.io/trojan/protocol)
-
-[socks5 protocol](https://www.rfc-editor.org/rfc/rfc1928)
 
 # 特性
 1. trojan协议代理
