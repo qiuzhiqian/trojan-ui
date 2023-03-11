@@ -359,6 +359,9 @@ fn find_config_file(name: &str) -> std::io::Result<PathBuf>{
     }
 
     path.push("trojan_ui");
+    if !path.exists() {
+        std::fs::create_dir_all(path.clone())?;
+    }
     path.push(name);
 
     Ok(path)
