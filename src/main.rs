@@ -16,12 +16,32 @@ use crate::config::{ConfigList,Config};
 //use crate::proxy::config;
 use notify_rust::{Notification,Timeout};
 
+pub fn decode_icon_data(bytes: &[u8]) -> Option<eframe::IconData> {
+    let image = image::load_from_memory(bytes).ok()?;
+    let image_buffer = image.to_rgba8();
+    let size = (image.width() as u32, image.height() as u32);
+    let pixels = image_buffer.into_vec();
+    let icon_data = eframe::IconData{
+        rgba: pixels,
+        width: size.0 ,
+        height: size.1,
+    };
+    Some(icon_data)
+}
+
 fn main() {
-    let options = eframe::NativeOptions {
+    let mut options = eframe::NativeOptions {
         initial_window_size: Some(egui::vec2(420.0, 480.0)),
         resizable: false,
         ..Default::default()
     };
+    let icon_bytes = if cfg!(target_os = "windows") {
+        include_bytes!("..\\config\\trojan_ui.png")
+    } else {
+        include_bytes!("../config/trojan_ui.png")
+    };
+    println!("icon len {}",icon_bytes.clone().len());
+    options.icon_data = decode_icon_data(icon_bytes);
     if let Err(e) = eframe::run_native(
         "Trojan Tools",
         options,
