@@ -35,11 +35,12 @@ fn main() {
         resizable: false,
         ..Default::default()
     };
-    let icon_bytes = if cfg!(target_os = "windows") {
-        include_bytes!("..\\config\\trojan_ui.png")
-    } else {
-        include_bytes!("../config/trojan_ui.png")
-    };
+
+    #[cfg(target_os = "windows")]
+    let icon_bytes =  include_bytes!("..\\config\\trojan_ui.png");
+    #[cfg(target_os = "linux")]
+    let icon_bytes =  include_bytes!("../config/trojan_ui.png");
+    
     println!("icon len {}",icon_bytes.clone().len());
     options.icon_data = decode_icon_data(icon_bytes);
     if let Err(e) = eframe::run_native(
