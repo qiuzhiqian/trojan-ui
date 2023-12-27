@@ -1,0 +1,40 @@
+import { Button, VerticalBox, HorizontalBox, ListView } from "std-widgets.slint";
+
+struct ClientData  {
+    title: string,
+    running: bool,
+}
+
+export component AppWindow inherits Window {
+    in-out property<int> counter: 42;
+    in property <[ClientData]> client-datas;
+    callback request-increase-value();
+    title: "Trojan UI";
+    width: 300px;
+    height: 450px;
+    VerticalBox {
+        Button {
+            text: "Increase value";
+            clicked => {
+                root.request-increase-value();
+            }
+        }
+        ListView {
+            for data[index] in client-datas : Rectangle {
+                width: parent.width;
+                background: Math.mod(index,2) != 0 ? #8a9865: #c1b1bd;
+                HorizontalBox {
+                    Text {
+                        text: data.title;
+                        font-size: 16px;
+                    }
+                    Rectangle {
+                    }
+                    Button {
+                        text: "Start";
+                    }
+                }
+            }
+        }
+    }
+}

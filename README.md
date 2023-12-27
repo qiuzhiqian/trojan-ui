@@ -4,38 +4,21 @@
 这是一个使用rust egui编写的一个trojan GUI工具，主要目的是方便从桌面直接启动trojan，避免了命令行的烦恼。
 
 # 配置
-配置文件需要是json格式的，并且文件名称必须为config.json。
-具体路径有如下选择：
-- $XDG_CONFIG_HOME/trojan_ui/config.json
-- $HOME/trojan_ui/config.json
+配置文件需要是json格式的，路径有如下选择：
+- $HOME/trojan_ui/
+本软件会扫猫该目录下面所有的client_*.json文件
 
 下面给出一个可用的配置例子：
 ```
 {
-  "version":1,
-  "dark_mode":false,
-  "configs":[
-    {
-      "remarks":"example",
-      "server":"example.com",
-      "server_port":443,
-      "client":"127.0.0.1",
-      "client_port":1080,
-      "sni":"",
-      "password":"fawiefaslclaisf",
-      "verify":true
-    },
-    {
-      "remarks": "test",
-      "server": "test.cn",
-      "server_port": 443,
-      "client": "127.0.0.1",
-      "client_port": 1080,
-      "sni": "test.cn",
-      "password": "fasdfjlsdfwwer",
-      "verify": true
-    }
-  ]
+  "remarks":"example",
+  "server":"example.com",
+  "server_port":443,
+  "client":"127.0.0.1",
+  "client_port":1080,
+  "sni":"",
+  "password":"fawiefaslclaisf",
+  "verify":true
 }
 ```
 

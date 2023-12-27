@@ -1,10 +1,9 @@
-use std::io::Write;
-
 use serde::{Serialize, Deserialize};
+use std::io::Write;
 use regex::Regex;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Config {
+pub struct Client {
     pub remarks: String,
     pub server: String,
     pub server_port: u16,
@@ -12,17 +11,10 @@ pub struct Config {
     pub client_port: u16,
     pub sni: String,
     pub password: String,
-    verify: bool,
+    pub verify: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ConfigList {
-    pub version: u32,
-    pub dark_mode: bool,
-    pub configs: Vec<Config>,
-}
-
-impl Config {
+impl Client {
     pub fn default() -> Self {
         Self{
             remarks: "test".to_string(),
@@ -71,23 +63,14 @@ impl Config {
     pub fn to_url(&self) -> String {
         format!("trojan://{}@{}:{}#{}",self.password,self.server,self.server_port,self.remarks)
     }
-}
 
-impl ConfigList{
-    pub fn default() -> Self {
-        Self {
-            version: 1,
-            dark_mode: false,
-            configs: Vec::new(),
-        }
-    }
-    pub fn new_from_file(file: &str) -> std::io::Result<Self> {
+    pub fn from_file(file: &str) -> std::io::Result<Self> {
         let f = std::fs::File::open(file).unwrap();
-        let values:ConfigList = serde_json::from_reader(f)?;
-        return Ok(values);
+        let values = serde_json::from_reader(f)?;
+        Ok(values)
     }
 
-    pub fn save_to_file(&self,file: &str) -> std::io::Result<()> {
+    pub fn to_file(&self, file: &str) -> std::io::Result<()> {
         let content = serde_json::to_string(self)?;
         let mut file = std::fs::File::create(file)?;
         file.write_all(content.as_bytes())?;
