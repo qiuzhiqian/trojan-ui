@@ -1,40 +1,39 @@
 import { Button, VerticalBox, HorizontalBox, ListView } from "std-widgets.slint";
-
-struct ClientData  {
-    title: string,
-    running: bool,
-}
+import {ClientSettings} from "client_page.slint";
+import {ListPage,ClientData} from "list_page.slint";
 
 export component AppWindow inherits Window {
-    in-out property<int> counter: 42;
+    in property <int> page-index : 0;
+    // Map properties of ListPage
     in property <[ClientData]> client-datas;
-    callback request-increase-value();
-    title: "Trojan UI";
+
+    // Map properties of ClientPage
+    in-out property<string> remarks;
+    in-out property<string> server;
+    in-out property<int> server_port;
+    in-out property<string> client;
+    in-out property<int> client_port;
+    in-out property<string> sni;
+    in-out property<string> password;
+    in-out property<bool> verify;
+
+    callback connect(bool, string);
+
+    title: "Trui";
     width: 300px;
     height: 450px;
-    VerticalBox {
-        Button {
-            text: "Increase value";
-            clicked => {
-                root.request-increase-value();
-            }
-        }
-        ListView {
-            for data[index] in client-datas : Rectangle {
-                width: parent.width;
-                background: Math.mod(index,2) != 0 ? #8a9865: #c1b1bd;
-                HorizontalBox {
-                    Text {
-                        text: data.title;
-                        font-size: 16px;
-                    }
-                    Rectangle {
-                    }
-                    Button {
-                        text: "Start";
-                    }
-                }
-            }
-        }
+    if page-index==0 : list_page := ListPage{
+        client-datas: root.client-datas;
+    }
+
+    if page-index==1 : client_page := ClientSettings{
+        remarks: root.remarks;
+        server: root.server;
+        server_port: root.server-port;
+        client: root.client;
+        client_port: root.client-port;
+        sni: root.sni;
+        password: root.password;
+        verify: root.verify;
     }
 }

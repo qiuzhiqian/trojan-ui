@@ -1,0 +1,37 @@
+import { Button, VerticalBox, HorizontalBox, ListView } from "std-widgets.slint";
+
+struct ClientData  {
+    title: string,
+    running: bool,
+}
+
+export component ListPage inherits VerticalBox {
+    in property <[ClientData]> client-datas;
+    callback connect(bool, string);
+    ListView {
+        for data[index] in client-datas : Rectangle {
+            width: parent.width;
+            background: Math.mod(index,2) != 0 ? #8a9865: #c1b1bd;
+            HorizontalBox {
+                Text {
+                    text: data.title;
+                    font-size: 16px;
+                }
+                Rectangle {
+                }
+                Button {
+                    text: @tr("Start");
+                    clicked => {
+                        root.connect(true, "abc")
+                    }
+                }
+            }
+        }
+    }
+    Button {
+        text: @tr("Add");
+    }
+}
+
+export {ClientData}
+   

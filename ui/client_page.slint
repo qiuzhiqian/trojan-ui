@@ -1,0 +1,69 @@
+import { Button, VerticalBox, HorizontalBox, LineEdit, Switch } from "std-widgets.slint";
+
+struct ClientMeta {
+    remarks: string,
+    server: string,
+    server_port: int,
+    client: string,
+    client_port: int,
+    sni: string,
+    password: string,
+    verify: bool,
+}
+
+export component ClientSettings inherits VerticalBox {
+    in-out property<string> remarks;
+    in-out property<string> server;
+    in-out property<int> server_port;
+    in-out property<string> client;
+    in-out property<int> client_port;
+    in-out property<string> sni;
+    in-out property<string> password;
+    in-out property<bool> verify;
+
+    LineEdit {
+        font-size: 14px;
+        width: parent.width;
+        placeholder-text: @tr("remarks");
+    }
+    LineEdit {
+        font-size: 14px;
+        width: parent.width;
+        placeholder-text: @tr("server address");
+    }
+    LineEdit {
+        font-size: 14px;
+        width: parent.width;
+        placeholder-text: @tr("server port");
+    }
+    LineEdit {
+        font-size: 14px;
+        width: parent.width;
+        placeholder-text: @tr("client address");
+    }
+    LineEdit {
+        font-size: 14px;
+        width: parent.width;
+        placeholder-text: @tr("client port");
+    }
+    LineEdit {
+        font-size: 14px;
+        width: parent.width;
+        placeholder-text: @tr("sni");
+    }
+    LineEdit {
+        font-size: 14px;
+        width: parent.width;
+        placeholder-text: @tr("password");
+    }
+    Switch {
+        width: parent.width;
+        text: @tr("Verify");
+    }
+    Rectangle{}
+    Button {
+        text: @tr("Confirm");
+    }
+}
+
+export {ClientMeta}

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+TryExec=trui
+Exec=trui
+Icon=trui
+Terminal=false
+Name=Trui
+Name[zh_HK]=Trui
+Name[zh_CN]=Trui
+GenericName=Trojan ui tools
+Comment=A ui tools for trojan client proxy

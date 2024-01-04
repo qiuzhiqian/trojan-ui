@@ -50,13 +50,13 @@ fn main() -> Result<(), slint::PlatformError> {
     let clients_model = Rc::new(VecModel::from(clients));
     ui.set_client_datas(clients_model.clone().into());
 
-    let ui_handle = ui.as_weak();
-    ui.on_request_increase_value(move || {
-        let ui = ui_handle.unwrap();
-        ui.set_counter(ui.get_counter() + 1);
-    });
+    //let ui_handle = ui.as_weak();
+    //ui.on_request_increase_value(move || {
+    //    let ui = ui_handle.unwrap();
+    //    ui.set_counter(ui.get_counter() + 1);
+    //});
 
-    for (path, client) in config_clients {
+    for (_path, client) in config_clients {
         clients_model.push(ClientData{title: client.remarks.clone().into(), running: false});
     }
 
