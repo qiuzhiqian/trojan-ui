@@ -1,11 +1,11 @@
-![应用图标](config/trojan_ui.svg)
+![应用图标](config/trui.svg)
 
 # 介绍
-这是一个使用rust egui编写的一个trojan GUI工具，主要目的是方便从桌面直接启动trojan，避免了命令行的烦恼。
+这是一个使用rust slint编写的一个trojan GUI工具，主要目的是方便从桌面直接启动trojan，避免了命令行的烦恼。
 
 # 配置
 配置文件需要是json格式的，路径有如下选择：
-- $HOME/trojan_ui/
+- $HOME/trui/
 本软件会扫猫该目录下面所有的client_*.json文件
 
 下面给出一个可用的配置例子：

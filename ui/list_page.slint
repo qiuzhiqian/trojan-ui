@@ -2,16 +2,19 @@ import { Button, VerticalBox, HorizontalBox, ListView } from "std-widgets.slint"
 
 struct ClientData  {
     title: string,
+    path: string,
     running: bool,
 }
 
 export component ListPage inherits VerticalBox {
     in property <[ClientData]> client-datas;
     callback connect(bool, string);
+    callback config-edit(string);
     ListView {
         for data[index] in client-datas : Rectangle {
             width: parent.width;
-            background: Math.mod(index,2) != 0 ? #8a9865: #c1b1bd;
+            background: Math.mod(index,2) != 0 ? #e6bd19: #e65719;
+            border-radius: 10px;
             HorizontalBox {
                 Text {
                     text: data.title;
@@ -20,9 +23,15 @@ export component ListPage inherits VerticalBox {
                 Rectangle {
                 }
                 Button {
+                    text: @tr("Edit");
+                    clicked => {
+                        root.config-edit(data.path);
+                    }
+                }
+                Button {
                     text: @tr("Start");
                     clicked => {
-                        root.connect(true, "abc")
+                        root.connect(true, data.path);
                     }
                 }
             }
@@ -30,6 +39,9 @@ export component ListPage inherits VerticalBox {
     }
     Button {
         text: @tr("Add");
+        clicked => {
+            root.config-edit("");
+        }
     }
 }
 

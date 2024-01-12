@@ -2,7 +2,7 @@ use serde::{Serialize, Deserialize};
 use std::io::Write;
 use regex::Regex;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Client {
     pub remarks: String,
     pub server: String,

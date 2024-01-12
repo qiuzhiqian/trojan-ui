@@ -3,30 +3,47 @@ import {ClientSettings} from "client_page.slint";
 import {ListPage,ClientData} from "list_page.slint";
 
 export component AppWindow inherits Window {
-    in property <int> page-index : 0;
+    in-out property <int> page-index : 0;
     // Map properties of ListPage
     in property <[ClientData]> client-datas;
 
     // Map properties of ClientPage
     in-out property<string> remarks;
     in-out property<string> server;
-    in-out property<int> server_port;
+    in-out property<string> server_port;
     in-out property<string> client;
-    in-out property<int> client_port;
+    in-out property<string> client_port;
     in-out property<string> sni;
     in-out property<string> password;
     in-out property<bool> verify;
 
     callback connect(bool, string);
+    callback config-edit(string);
+    callback config-save(string);
 
     title: "Trui";
+    icon: @image-url("../config/trui.png");
     width: 300px;
     height: 450px;
-    if page-index==0 : list_page := ListPage{
+    background: #a6e319;
+    list_page := ListPage{
+        x: root.page-index == 0? 0px: root.width + 1px;
         client-datas: root.client-datas;
+        connect(on, path) => {
+            root.connect(on, path);
+        }
+
+        config-edit(path) => {
+            client_page.path = path;
+            root.config-edit(path);
+        }
+
+        animate x { duration: 300ms; easing: ease-out-circ; }
     }
 
-    if page-index==1 : client_page := ClientSettings{
+    client_page := ClientSettings{
+        x: root.page-index == 1? 0px: root.width + 1px;
+        width: 100%;
         remarks: root.remarks;
         server: root.server;
         server_port: root.server-port;
@@ -35,5 +52,19 @@ export component AppWindow inherits Window {
         sni: root.sni;
         password: root.password;
         verify: root.verify;
+        confirm(save) => {
+            root.remarks = self.remarks;
+            root.server = self.server;
+            root.server-port = self.server-port;
+            root.client = self.client;
+            root.client-port = self.client-port;
+            root.sni = self.sni;
+            root.password = self.password;
+            root.verify = self.verify;
+
+            root.config-save(self.path)
+        }
+
+        animate x { duration: 300ms; easing: ease-out-circ; }
     }
 }

@@ -12,57 +12,65 @@ struct ClientMeta {
 }
 
 export component ClientSettings inherits VerticalBox {
-    in-out property<string> remarks;
-    in-out property<string> server;
-    in-out property<int> server_port;
-    in-out property<string> client;
-    in-out property<int> client_port;
-    in-out property<string> sni;
-    in-out property<string> password;
-    in-out property<bool> verify;
+    in-out property <string> path;
+    in-out property<string> remarks <=> remarks.text;
+    in-out property<string> server <=> server.text;
+    in-out property<string> server_port <=> server_port.text;
+    in-out property<string> client <=> client.text;
+    in-out property<string> client_port <=> client_port.text;
+    in-out property<string> sni <=> sni.text;
+    in-out property<string> password <=> password.text;
+    in-out property<bool> verify <=> verify.checked;
+    callback confirm(bool, string);
 
-    LineEdit {
+    remarks := LineEdit {
         font-size: 14px;
-        width: parent.width;
+        width: 100%;
         placeholder-text: @tr("remarks");
     }
-    LineEdit {
+    server := LineEdit {
         font-size: 14px;
-        width: parent.width;
+        width: 100%;
         placeholder-text: @tr("server address");
     }
-    LineEdit {
+    server_port := LineEdit {
         font-size: 14px;
-        width: parent.width;
+        width: 100%;
+        input-type: number;
         placeholder-text: @tr("server port");
     }
-    LineEdit {
+    client := LineEdit {
         font-size: 14px;
-        width: parent.width;
+        width: 100%;
         placeholder-text: @tr("client address");
     }
-    LineEdit {
+    client_port := LineEdit {
         font-size: 14px;
-        width: parent.width;
+        width: 100%;
+        input-type: InputType.number;
         placeholder-text: @tr("client port");
     }
-    LineEdit {
+    sni := LineEdit {
         font-size: 14px;
-        width: parent.width;
+        width: 100%;
         placeholder-text: @tr("sni");
     }
-    LineEdit {
+    password := LineEdit {
         font-size: 14px;
-        width: parent.width;
+        width: 100%;
+        input-type: InputType.password;
         placeholder-text: @tr("password");
     }
-    Switch {
-        width: parent.width;
+    verify := Switch {
+        width: 100%;
         text: @tr("Verify");
     }
     Rectangle{}
     Button {
         text: @tr("Confirm");
+        clicked => {
+            root.confirm(true, path);
+        }
     }
 }
 
