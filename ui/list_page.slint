@@ -11,27 +11,31 @@ export component ListPage inherits VerticalBox {
     callback connect(bool, string);
     callback config-edit(string);
     ListView {
-        for data[index] in client-datas : Rectangle {
+        for data[index] in client-datas : HorizontalBox {
             width: parent.width;
-            background: Math.mod(index,2) != 0 ? #e6bd19: #e65719;
-            border-radius: 10px;
-            HorizontalBox {
-                Text {
-                    text: data.title;
-                    font-size: 16px;
-                }
-                Rectangle {
-                }
-                Button {
-                    text: @tr("Edit");
-                    clicked => {
-                        root.config-edit(data.path);
+            padding: 6px;
+            Rectangle {
+                background: #3e4746;
+                border-radius: 10px;
+                HorizontalBox {
+                    Text {
+                        text: data.title;
+                        font-size: 16px;
+                        color: Colors.white;
                     }
-                }
-                Button {
-                    text: @tr("Start");
-                    clicked => {
-                        root.connect(true, data.path);
+                    Rectangle {
+                    }
+                    Button {
+                        text: @tr("Edit");
+                        clicked => {
+                            root.config-edit(data.path);
+                        }
+                    }
+                    Button {
+                        text: @tr("Start");
+                        clicked => {
+                            root.connect(true, data.path);
+                        }
                     }
                 }
             }
