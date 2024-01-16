@@ -1,5 +1,7 @@
 import { Button, VerticalBox, HorizontalBox, LineEdit, Switch } from "std-widgets.slint";
 
+import { SimpleSwitch } from "./widgets/simple-switch.slint";
+
 struct ClientMeta {
     remarks: string,
     server: string,
@@ -61,9 +63,20 @@ export component ClientSettings inherits VerticalBox {
         input-type: InputType.password;
         placeholder-text: @tr("password");
     }
-    verify := Switch {
-        width: 100%;
-        text: @tr("Verify");
+    //verify := SimpleSwitch {
+    //    width: 100%;
+    //    text-color: Colors.white;
+    //    text: @tr("Verify");
+    //}
+    HorizontalBox{
+        Text {
+            text: @tr("Verify");
+            font-size: 16px;
+            color: Colors.white;
+        }
+        Rectangle {
+        }
+        verify := SimpleSwitch {}
     }
     Rectangle{}
     Button {

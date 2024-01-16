@@ -7,6 +7,8 @@ use std::fs;
 use std::env;
 use std::rc::Rc;
 use std::sync::{Arc,Mutex};
+use chrono::{DateTime, Utc};
+
 use slint::Model;
 use slint::VecModel;
 
@@ -87,11 +89,28 @@ fn main() -> Result<(), slint::PlatformError> {
     let clients_obj = config_clients.clone();
     let ui_handle_obj = ui_handle.clone();
     let clients_model_obj = clients_model.clone();
+    let config_path_clone = config_path.clone();
     ui.on_config_save(move |path: slint::SharedString| {
         let ui = ui_handle_obj.unwrap();
-        //ui.set_counter(ui.get_counter() + 1);
         if path.to_string() == "" {
             log::info!("save new config");
+            let now: DateTime<Utc> = Utc::now();
+            let new_path = format!("{}/config-{}.json", config_path_clone, now.format("%Y%m%d%H%M%S-%f"));
+            let c = config::Client{
+                remarks: ui.get_remarks().to_string().clone(),
+                server: ui.get_server().to_string(),
+                server_port : ui.get_server_port().to_string().parse().unwrap(),
+                client : ui.get_client().to_string(),
+                client_port : ui.get_client_port().to_string().parse().unwrap(),
+                sni : ui.get_sni().to_string(),
+                password : ui.get_password().to_string(),
+                verify : ui.get_verify(),
+            };
+
+            let mut locked_client = clients_obj.lock().unwrap();
+            
+            clients_model_obj.push(ClientData{title: c.remarks.clone().into(), running: false, path: new_path.clone().into()});
+            locked_client.insert(new_path, c);
         } else {
             log::info!("config save {}", &path.to_string());
             let mut locked_client = clients_obj.lock().unwrap();
