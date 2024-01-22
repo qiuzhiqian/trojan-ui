@@ -56,9 +56,30 @@ fn main() -> Result<(), slint::PlatformError> {
     let clients_model = Rc::new(VecModel::from(clients));
     ui.set_client_datas(clients_model.clone().into());
 
+    let clients_obj = config_clients.clone();
     let ui_handle = ui.as_weak();
+    let mut tx_arc :Option<tokio::sync::mpsc::Sender<bool>> = None;
+
+    let rt = Arc::new(tokio::runtime::Runtime::new().unwrap());
+    let rt_clone = rt.clone();
     ui.on_connect(move |_on: bool, path: slint::SharedString| {
         log::info!("connect {}", &path.to_string());
+        let locked_client = clients_obj.lock().unwrap();
+        if let Some(p) = locked_client.get(&path.to_string()) {
+            
+            let (tx, mut rx) = tokio::sync::mpsc::channel(32);
+            tx_arc = Some(tx);
+            
+            let proxy = trojan_rust::Proxy::new(&p.client,
+                    p.client_port,
+                    &p.server,
+                    p.server_port,
+                    &p.password,
+                    &p.sni);
+            rt_clone.spawn(async move{
+                proxy.start(&mut rx).await;
+            });
+        }
     });
 
     let clients_obj = config_clients.clone();
